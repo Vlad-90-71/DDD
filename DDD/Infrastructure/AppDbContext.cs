@@ -1,9 +1,9 @@
 ﻿using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using DDD.Domain.Common;
 using DDD.Domain.Entities;
 using DDD.Infrastructure.Converters;
+using DDD.Domain.Common.SmartEnum;
 
 namespace DDD.Infrastructure;
 

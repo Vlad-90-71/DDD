@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-namespace DDD.Domain.Common;
+namespace DDD.Domain.Common.SmartEnum;
 
 public interface ISmartEnum<T> where T : ISmartEnum<T>
 {

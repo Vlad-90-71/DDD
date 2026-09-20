@@ -1,4 +1,4 @@
-﻿using DDD.Domain.Common;
+﻿using DDD.Domain.Common.SmartEnum;
 
 namespace DDD.Domain.Enums;
 

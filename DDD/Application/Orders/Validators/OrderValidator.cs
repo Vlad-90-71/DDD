@@ -1,13 +1,10 @@
 ﻿using FluentValidation;
-using DDD.Domain.Enums;
-using DDD.Application.Common;
-using DDD.Application.Orders.Dto;
 
 namespace DDD.Application.Orders.Validators;
 
-public class CreateOrderValidator : AbstractValidator<CreateOrderDto>
+public class OrderValidator : AbstractValidator<OrderDto>
 {
-    public CreateOrderValidator()
+    public OrderValidator()
     {
         RuleFor(x => x.CustomerName)
             .NotEmpty().WithMessage("Имя клиента обязательно.");

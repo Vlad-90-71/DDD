@@ -1,8 +1,7 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
-using DDD.Domain.Common;
 
-namespace DDD.Presentation.Common.Json;
+namespace DDD.Domain.Common.SmartEnum.Json;
 
 public class SmartEnumJsonConverterFactory : JsonConverterFactory
 {

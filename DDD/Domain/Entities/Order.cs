@@ -4,7 +4,6 @@ namespace DDD.Domain.Entities;
 
 public class Order
 {
-    // Оставляем свойства закрытыми для внешней записи (private set)
     public int Id { get; private set; }
     public string CustomerName { get; private set; } = string.Empty;
     public OrderStatus Status { get; private set; } = OrderStatus.New;

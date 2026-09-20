@@ -1,7 +1,7 @@
 ﻿using System.Reflection;
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using DDD.Domain.Common;
+using DDD.Domain.Common.SmartEnum;
 
 namespace DDD.Infrastructure.Converters;
 
