@@ -1,32 +1,48 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using DDD.Domain.Enums;
-using DDD.Domain.Entities;
+using DDD.Application.Orders;
+using DDD.Application.Orders.Dto;
 
 namespace DDD.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class OrdersController : ControllerBase
+public class OrdersController(IOrderService orderService) : ControllerBase
 {
-    // Эндпоинт для получения заказа (проверим, как статус уходит в JSON)
     [HttpGet("{id:int}")]
-    public ActionResult<Order> GetOrder(int id)
+    public async Task<ActionResult<OrderResponseDto>> GetOrder(int id)
     {
-        var order = new Order
-        {
-            Id = id,
-            CustomerName = "Тестовый Клиент",
-            Status = OrderStatus.Processing // Будет автоматически сериализован в число 2
-        };
-
-        return Ok(order);
+        var response = await orderService.GetOrderByIdAsync(id);
+        return response is null ? NotFound() : Ok(response);
     }
 
-    // Эндпоинт для создания заказа (проверим, как принимает int)
-    [HttpPost]
-    public IActionResult CreateOrder([FromBody] Order order)
+    // GET: api/Orders?statusId=2
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<OrderResponseDto>>> GetAllOrders([FromQuery] GetOrdersQuery query)
     {
-        // Здесь сработает наш JsonConverter и превратит пришедший int в объект OrderStatus
-        return Ok(new { Message = $"Заказ создан со статусом: {order.Status}" });
+        var response = await orderService.GetAllOrdersAsync(query);
+        return Ok(response);
+    }
+
+    [HttpPost]
+    public async Task<ActionResult<OrderResponseDto>> CreateOrder([FromBody] CreateOrderDto dto)
+    {
+        var response = await orderService.CreateOrderAsync(dto);
+        return CreatedAtAction(nameof(GetOrder), new { id = response.Id }, response);
+    }
+
+    // PUT: api/Orders/5 (Обновление)
+    [HttpPut("{id:int}")]
+    public async Task<ActionResult<OrderResponseDto>> UpdateOrder(int id, [FromBody] UpdateOrderDto dto)
+    {
+        var response = await orderService.UpdateOrderAsync(id, dto);
+        return response is null ? NotFound(new { Message = "Заказ не найден." }) : Ok(response);
+    }
+
+    // DELETE: api/Orders/5 (Удаление)
+    [HttpDelete("{id:int}")]
+    public async Task<IActionResult> DeleteOrder(int id)
+    {
+        var success = await orderService.DeleteOrderAsync(id);
+        return success ? NoContent() : NotFound(new { Message = "Заказ не найден." });
     }
 }

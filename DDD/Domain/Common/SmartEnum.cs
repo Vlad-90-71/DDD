@@ -29,8 +29,8 @@ public abstract class SmartEnum<T>(int value, string displayName) : ISmartEnum<T
 
     public static T FromValue(int value) =>
         ValuesByName.Value.Values.FirstOrDefault(s => s.Value == value)
-        ?? throw new InvalidCastException($"Невозможно найти элемент типа {typeof(T).Name} со значением {value}.");
-
+        ?? throw new InvalidCastException($"Значение '{value}' невалидно для {typeof(T).Name}. " +
+            $"Допустимые значения: {string.Join(", ", ValuesByName.Value.Values.Select(static x => x.Value).ToHashSet())}.");
     public static bool TryParse(int value, [NotNullWhen(true)] out T? result)
     {
         result = ValuesByName.Value.Values.FirstOrDefault(s => s.Value == value);

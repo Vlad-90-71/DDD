@@ -1,8 +1,9 @@
 ﻿using FluentValidation;
 using DDD.Domain.Enums;
 using DDD.Application.Common;
+using DDD.Application.Orders.Dto;
 
-namespace DDD.Application.Orders;
+namespace DDD.Application.Orders.Validators;
 
 public class CreateOrderValidator : AbstractValidator<CreateOrderDto>
 {
@@ -11,8 +12,7 @@ public class CreateOrderValidator : AbstractValidator<CreateOrderDto>
         RuleFor(x => x.CustomerName)
             .NotEmpty().WithMessage("Имя клиента обязательно.");
 
-        // Автоматическая валидация переданного int по нашему списку OrderStatus
-        RuleFor(x => x.StatusId)
-            .IsInSmartEnum<CreateOrderDto, OrderStatus>();
+        RuleFor(x => x.Status)
+            .NotNull().WithMessage("Статус заказа обязателен.");
     }
 }

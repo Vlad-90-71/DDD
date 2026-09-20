@@ -2,12 +2,15 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using DDD.Domain.Common;
-using DDD.Infrastructure.Persistence.Converters;
+using DDD.Domain.Entities;
+using DDD.Infrastructure.Converters;
 
-namespace DDD.Infrastructure.Persistence;
+namespace DDD.Infrastructure;
 
 public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
+    public DbSet<Order> Orders { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
