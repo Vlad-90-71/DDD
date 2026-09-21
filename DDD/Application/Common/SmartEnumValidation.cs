@@ -11,12 +11,9 @@ public static class SmartEnumValidation
         return ruleBuilder
             .Must((_, value, context) =>
             {
-                // ИСПРАВЛЕНИЕ: Вызываем статические методы через базовый класс SmartEnum<TEnum>
                 if (SmartEnum<TEnum>.TryParse(value, out TEnum? _)) return true;
 
-                // ИСПРАВЛЕНИЕ: Вызываем хелпер сообщения также через базовый класс
                 var errorMessage = SmartEnum<TEnum>.GetInvalidValueMessage(value);
-
                 context.MessageFormatter.AppendArgument("SmartEnumError", errorMessage);
 
                 return false;

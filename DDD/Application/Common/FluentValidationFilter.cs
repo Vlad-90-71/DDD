@@ -1,6 +1,5 @@
-﻿using FluentValidation;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Filters;
+﻿using Microsoft.AspNetCore.Mvc.Filters;
+using FluentValidation;
 
 namespace DDD.Application.Common;
 
@@ -24,18 +23,7 @@ public class FluentValidationFilter : IAsyncActionFilter
                 var validationResult = await validator.ValidateAsync(validationContext, context.HttpContext.RequestAborted);
 
                 if (!validationResult.IsValid)
-                {
-                    // Преобразуем ошибки в стандартный словарь ModelState dictionary
-                    var modelState = context.ModelState;
-                    foreach (var error in validationResult.Errors)
-                    {
-                        modelState.AddModelError(error.PropertyName, error.ErrorMessage);
-                    }
-
-                    // Возвращаем ValidationProblemDetails (стандартный 400 BadRequest для API)
-                    context.Result = new BadRequestObjectResult(new ValidationProblemDetails(modelState));
-                    return; // Прерываем выполнение, в экшен контроллера запрос не пойдет
-                }
+                    throw new ValidationException(validationResult.Errors);
             }
         }
 

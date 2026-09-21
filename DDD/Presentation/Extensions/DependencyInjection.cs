@@ -1,8 +1,9 @@
-﻿using System.Text;
-using System.Reflection;
-using DDD.Application.Common;
+﻿using DDD.Application.Common;
 using DDD.Domain.Common.SmartEnum;
 using DDD.Domain.Common.SmartEnum.Json;
+using DDD.Presentation.Exceptions;
+using System.Reflection;
+using System.Text;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -10,6 +11,10 @@ public static partial class DependencyInjection
 {
     public static IServiceCollection AddPresentationControllers(this IServiceCollection services)
     {
+        // Регистрируем службы поддержки ProblemDetails и наш обработчик
+        services.AddProblemDetails();
+        services.AddExceptionHandler<GlobalExceptionHandler>();
+
         services.AddControllers(options =>
         {
             options.Filters.Add<FluentValidationFilter>();

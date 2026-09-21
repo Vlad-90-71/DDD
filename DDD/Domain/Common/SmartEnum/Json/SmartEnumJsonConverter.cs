@@ -11,9 +11,8 @@ public class SmartEnumJsonConverter<T> : JsonConverter<T> where T : SmartEnum<T>
         if (reader.TokenType == JsonTokenType.Number && reader.TryGetInt32(out int intValue))
         {
             if (SmartEnum<T>.TryParse(intValue, out var result))
-            {
                 return result;
-            }
+
             throw new JsonException(SmartEnum<T>.GetInvalidValueMessage(intValue));
         }
 
@@ -24,23 +23,18 @@ public class SmartEnumJsonConverter<T> : JsonConverter<T> where T : SmartEnum<T>
 
             // 2.1. Поиск по C# имени свойства (O(1)) -> например, "Processing"
             if (SmartEnum<T>.TryParse(rawValue, out var resultByName))
-            {
                 return resultByName;
-            }
 
             // 2.2. Поиск по DisplayName (O(1)) -> например, "В обработке"
             if (SmartEnum<T>.TryParseByDisplay(rawValue, out var resultByDisplay))
-            {
                 return resultByDisplay;
-            }
 
             // 2.3. Если строка — это число в кавычках (например, "2")
             if (int.TryParse(rawValue, out int parsedInt))
             {
                 if (SmartEnum<T>.TryParse(parsedInt, out var resultByParsedInt))
-                {
                     return resultByParsedInt;
-                }
+
                 throw new JsonException(SmartEnum<T>.GetInvalidValueMessage(parsedInt));
             }
 
@@ -52,7 +46,13 @@ public class SmartEnumJsonConverter<T> : JsonConverter<T> where T : SmartEnum<T>
 
     public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
     {
-        ArgumentNullException.ThrowIfNull(value);
+        // Безопасная обработка null-значений, если энам не был инициализирован
+        if (value is null)
+        {
+            writer.WriteNullValue();
+            return;
+        }
+
         // При сериализации API всегда отдает лаконичное числовое значение
         writer.WriteNumberValue(value.Value);
     }
