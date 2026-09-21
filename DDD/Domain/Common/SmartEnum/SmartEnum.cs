@@ -1,8 +1,7 @@
-﻿using System.Collections.Frozen;
-using System.Collections.Immutable;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Text;
 using System.Reflection;
-using System.Text;
+using System.Collections.Frozen;
+using System.Diagnostics.CodeAnalysis;
 
 namespace DDD.Domain.Common.SmartEnum;
 
@@ -94,4 +93,23 @@ public abstract class SmartEnum<T>(int value, string displayName) : ISmartEnum<T
 
     public static bool operator ==(SmartEnum<T>? left, SmartEnum<T>? right) => Equals(left, right);
     public static bool operator !=(SmartEnum<T>? left, SmartEnum<T>? right) => !Equals(left, right);
+}
+
+public static class SmartEnum
+{
+    public static bool IsSmartEnum(Type type)
+    {
+        for (var current = type;
+             current is not null && current != typeof(object);
+             current = current.BaseType)
+        {
+            if (current.IsGenericType &&
+                current.GetGenericTypeDefinition() == typeof(SmartEnum<>))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

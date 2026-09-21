@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using DDD.Domain.Common.SmartEnum;
 using DDD.Infrastructure.Converters;
 
@@ -6,24 +7,24 @@ namespace DDD.Infrastructure.Extensions;
 
 public static class SmartEnumModelConfigurationBuilder
 {
-    /// <summary>
-    /// Автоматически находит и настраивает ВСЕ свойства типа SmartEnum (включая Nullable) во всей системе.
-    /// </summary>
-    public static ModelConfigurationBuilder SmartEnumConfiguration(this ModelConfigurationBuilder configurationBuilder)
+    public static void SmartEnumConfiguration(this ModelBuilder modelBuilder)
     {
-        // 1. Регистрируем открытый generic-конвертер для ВСЕХ стандартных SmartEnum свойств
-        configurationBuilder
-            .Properties(typeof(SmartEnum<>))
-            .HaveConversion(typeof(SmartEnumConverter<>))
-            .HaveColumnType("int");
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            foreach (var property in entityType.GetProperties())
+            {
+                var propertyType = property.ClrType;
 
-        // 2. Регистрируем открытый generic-конвертер для ВСЕХ Nullable SmartEnum свойств
-        // EF Core автоматически сопоставит Nullable<T> с NullableSmartEnumConverter<T>
-        configurationBuilder
-            .Properties(typeof(SmartEnum<>))
-            .HaveConversion(typeof(NullableSmartEnumConverter<>))
-            .HaveColumnType("int");
+                if (!SmartEnum.IsSmartEnum(propertyType))
+                    continue;
 
-        return configurationBuilder;
+                var converterType = typeof(SmartEnumConverter<>).MakeGenericType(propertyType);
+                var converter = (ValueConverter)Activator.CreateInstance(converterType)!;
+
+                property.SetValueConverter(converter);
+                property.SetColumnType("int");
+            }
+        }
     }
 }
+

@@ -2,7 +2,7 @@
 
 namespace DDD.Domain.Common.SmartEnum;
 
-public interface ISmartEnum<T> where T : ISmartEnum<T>
+public interface ISmartEnum<T> where T : SmartEnum<T>
 {
     int Value { get; }
     string ToString();

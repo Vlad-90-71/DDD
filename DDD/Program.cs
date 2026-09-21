@@ -4,7 +4,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 
 builder.Services.AddPresentationControllers();
-builder.Services.AddApplicationOpenApi();
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 

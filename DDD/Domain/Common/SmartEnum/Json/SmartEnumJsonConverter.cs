@@ -1,55 +1,80 @@
-﻿using System.Text.Json;
+﻿using System.Globalization;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace DDD.Domain.Common.SmartEnum.Json;
 
-public class SmartEnumJsonConverter<T> : JsonConverter<T> where T : SmartEnum<T>, ISmartEnum<T>
+public sealed class SmartEnumJsonConverter<T> : JsonConverter<T>
+    where T : SmartEnum<T>, ISmartEnum<T>
 {
-    public override T? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    public override T? Read(
+        ref Utf8JsonReader reader,
+        Type typeToConvert,
+        JsonSerializerOptions options)
     {
-        // СЦЕНАРИЙ 1: На вход пришло чистое число (например, 2)
-        if (reader.TokenType == JsonTokenType.Number && reader.TryGetInt32(out int intValue))
+        switch (reader.TokenType)
         {
-            if (SmartEnum<T>.TryParse(intValue, out var result))
-                return result;
+            case JsonTokenType.Number:
+                {
+                    if (!reader.TryGetInt32(out var value))
+                    {
+                        throw new JsonException(
+                            $"Значение для {typeof(T).Name} должно быть целым числом.");
+                    }
 
-            throw new JsonException(SmartEnum<T>.GetInvalidValueMessage(intValue));
-        }
+                    return ParseValue(value);
+                }
 
-        // СЦЕНАРИЙ 2: На вход пришла строка (текст или число в кавычках)
-        if (reader.TokenType == JsonTokenType.String)
-        {
-            string? rawValue = reader.GetString();
+            case JsonTokenType.String:
+                {
+                    var rawValue = reader.GetString();
 
-            if (string.IsNullOrWhiteSpace(rawValue))
+                    if (string.IsNullOrWhiteSpace(rawValue))
+                        return null;
+
+                    // C# field name:
+                    // "New", "Processing", "Shipped", "Canceled"
+                    if (SmartEnum<T>.TryParse(rawValue, out var resultByName))
+                        return resultByName;
+
+                    // DisplayName:
+                    // "Новый", "В обработке", "Доставлен", "Отменен"
+                    if (SmartEnum<T>.TryParseByDisplay(rawValue, out var resultByDisplay))
+                        return resultByDisplay;
+
+                    // Numeric string:
+                    // "1", "2", "3", "4"
+                    if (int.TryParse(rawValue, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedValue))
+                        return ParseValue(parsedValue);
+
+                    throw new JsonException(
+                        SmartEnum<T>.GetInvalidValueMessage(rawValue));
+                }
+
+            case JsonTokenType.Null:
                 return null;
 
-            // 2.1. Поиск по C# имени свойства (O(1)) -> например, "Processing"
-            if (SmartEnum<T>.TryParse(rawValue, out var resultByName))
-                return resultByName;
-
-            // 2.2. Поиск по DisplayName (O(1)) -> например, "В обработке"
-            if (SmartEnum<T>.TryParseByDisplay(rawValue, out var resultByDisplay))
-                return resultByDisplay;
-
-            // 2.3. Если строка — это число в кавычках (например, "2")
-            if (int.TryParse(rawValue, out int parsedInt))
-            {
-                if (SmartEnum<T>.TryParse(parsedInt, out var resultByParsedInt))
-                    return resultByParsedInt;
-
-                throw new JsonException(SmartEnum<T>.GetInvalidValueMessage(parsedInt));
-            }
-
-            throw new JsonException(SmartEnum<T>.GetInvalidValueMessage(rawValue));
+            default:
+                throw new JsonException(
+                    $"Неподдерживаемый JSON-токен '{reader.TokenType}' " +
+                    $"для {typeof(T).Name}.");
         }
-
-        throw new JsonException($"Неподдерживаемый формат JSON-токена '{reader.TokenType}' для перечисления {typeToConvert.Name}.");
     }
 
-    public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
+    public override void Write(
+        Utf8JsonWriter writer,
+        T value,
+        JsonSerializerOptions options)
     {
-        // При сериализации API всегда отдает лаконичное числовое значение
         writer.WriteNumberValue(value.Value);
+    }
+
+    private static T ParseValue(int value)
+    {
+        if (SmartEnum<T>.TryParse(value, out var result))
+            return result;
+
+        throw new JsonException(
+            SmartEnum<T>.GetInvalidValueMessage(value));
     }
 }

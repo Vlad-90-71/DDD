@@ -7,10 +7,7 @@ namespace DDD.Presentation.Exceptions;
 
 public class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger) : IExceptionHandler
 {
-    public async ValueTask<bool> TryHandleAsync(
-        HttpContext httpContext,
-        Exception exception,
-        CancellationToken cancellationToken)
+    public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
     {
         // 1. Логируем критическую ошибку с трассировкой стека для разработчиков
         logger.LogError(exception, "Произошло необработанная ошибка приложения: {Message}", exception.Message);

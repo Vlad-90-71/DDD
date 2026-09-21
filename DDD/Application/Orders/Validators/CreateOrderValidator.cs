@@ -2,9 +2,9 @@
 
 namespace DDD.Application.Orders.Validators;
 
-public class OrderValidator : AbstractValidator<OrderDto>
+public class CreateOrderValidator : AbstractValidator<CreateOrderDto>
 {
-    public OrderValidator()
+    public CreateOrderValidator()
     {
         RuleFor(x => x.CustomerName)
             .NotEmpty().WithMessage("Имя клиента обязательно.");

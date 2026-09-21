@@ -17,7 +17,7 @@ public class OrdersController(IOrderService orderService) : ControllerBase
         Ok(await orderService.GetAllOrdersAsync(query));
 
     [HttpPost]
-    public async Task<ActionResult<OrderResponse>> CreateOrder([FromBody] OrderDto orderDto)
+    public async Task<ActionResult<OrderResponse>> CreateOrder([FromBody] CreateOrderDto orderDto)
     {
         var response = await orderService.CreateOrderAsync(orderDto);
         return CreatedAtAction(nameof(GetOrder), new { id = response.Id }, response);
@@ -25,7 +25,7 @@ public class OrdersController(IOrderService orderService) : ControllerBase
 
     // PUT: api/Orders/5
     [HttpPut("{id:int}")]
-    public async Task<ActionResult<OrderResponse>> UpdateOrder(int id, [FromBody] OrderDto orderDto) =>
+    public async Task<ActionResult<OrderResponse>> UpdateOrder(int id, [FromBody] UpdateOrderDto orderDto) =>
         await orderService.UpdateOrderAsync(id, orderDto) is { } response
             ? Ok(response)
             : NotFound(new { Message = "Заказ не найден." });
