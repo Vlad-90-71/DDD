@@ -11,4 +11,13 @@ public class SmartEnumConverter<T> : ValueConverter<T, int> where T : SmartEnum<
     )
     { }
 }
+public class NullableSmartEnumConverter<T> : ValueConverter<T?, int?> where T : SmartEnum<T>, ISmartEnum<T>
+{
+    public NullableSmartEnumConverter() : base(
+        static v => v != null ? v.Value : null,
+        static id => id.HasValue ? SmartEnum<T>.FromValue(id.Value) : null
+    )
+    { }
+}
+
 

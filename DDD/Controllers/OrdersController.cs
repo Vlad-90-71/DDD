@@ -8,25 +8,25 @@ namespace DDD.Controllers;
 public class OrdersController(IOrderService orderService) : ControllerBase
 {
     [HttpGet("{id:int}")]
-    public async Task<ActionResult<OrderResponseDto>> GetOrder(int id) =>
+    public async Task<ActionResult<OrderResponse>> GetOrder(int id) =>
         await orderService.GetOrderByIdAsync(id) is { } response ? Ok(response) : NotFound();
 
     // GET: api/Orders?statusId=2
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<OrderResponseDto>>> GetAllOrders([FromQuery] GetOrdersQuery query) =>
+    public async Task<ActionResult<IEnumerable<OrderResponse>>> GetAllOrders([FromQuery] GetOrdersQuery query) =>
         Ok(await orderService.GetAllOrdersAsync(query));
 
     [HttpPost]
-    public async Task<ActionResult<OrderResponseDto>> CreateOrder([FromBody] OrderDto dto)
+    public async Task<ActionResult<OrderResponse>> CreateOrder([FromBody] OrderDto orderDto)
     {
-        var response = await orderService.CreateOrderAsync(dto);
+        var response = await orderService.CreateOrderAsync(orderDto);
         return CreatedAtAction(nameof(GetOrder), new { id = response.Id }, response);
     }
 
     // PUT: api/Orders/5
     [HttpPut("{id:int}")]
-    public async Task<ActionResult<OrderResponseDto>> UpdateOrder(int id, [FromBody] OrderDto dto) =>
-        await orderService.UpdateOrderAsync(id, dto) is { } response
+    public async Task<ActionResult<OrderResponse>> UpdateOrder(int id, [FromBody] OrderDto orderDto) =>
+        await orderService.UpdateOrderAsync(id, orderDto) is { } response
             ? Ok(response)
             : NotFound(new { Message = "Заказ не найден." });
 

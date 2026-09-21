@@ -30,33 +30,30 @@ public static partial class DependencyInjection
 
     public static IServiceCollection AddApplicationOpenApi(this IServiceCollection services)
     {
-        services.AddOpenApi(options =>
+        services.AddOpenApi(static options =>
         {
-            options.AddSchemaTransformer((schema, context, cancellationToken) =>
+            options.AddSchemaTransformer(static (schema, context, cancellationToken) =>
             {
                 var type = context.JsonTypeInfo.Type;
 
-                // Проверяем, реализует ли тип интерфейс ISmartEnum<>
+                if (!type.IsClass)
+                    return Task.CompletedTask;
+
                 var smartEnumInterface = type.GetInterfaces()
-                    .FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(ISmartEnum<>));
+                    .FirstOrDefault(static i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(ISmartEnum<>));
 
                 if (smartEnumInterface != null)
                 {
-                    var getRawValuesMethod = type.GetMethod("GetRawAllowedValues",
+                    // Находим метод получения готовой строки
+                    var getDescriptionMethod = type.GetMethod("GetOpenApiDescription",
                             BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy);
 
-                    if (getRawValuesMethod != null && getRawValuesMethod.Invoke(null, null) is IEnumerable<SmartEnumRawItem> rawValues)
+                    // Invoke возвращает object, содержащий ссылку на string. Боксинга структуры НЕ происходит.
+                    if (getDescriptionMethod?.Invoke(null, null) is string description)
                     {
-                        var descriptionBuilder = new StringBuilder("Доступные значения:\n");
-
-                        foreach (var item in rawValues)
-                        {
-                            descriptionBuilder.AppendLine($"* **{item.Value}** — {item.Name} ({item.Display})");
-                        }
-
                         schema.Type = "integer";
                         schema.Format = "int32";
-                        schema.Description = descriptionBuilder.ToString().TrimEnd();
+                        schema.Description = description;
 
                         schema.Properties?.Clear();
                     }

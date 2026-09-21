@@ -1,10 +1,10 @@
-﻿using System.Reflection;
-using System.Collections.Frozen;
+﻿using System.Collections.Frozen;
+using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
+using System.Text;
 
 namespace DDD.Domain.Common.SmartEnum;
-
-public record struct SmartEnumRawItem(int Value, string Name, string Display);
 
 public abstract class SmartEnum<T>(int value, string displayName) : ISmartEnum<T>, IEquatable<SmartEnum<T>>
     where T : SmartEnum<T>
@@ -14,8 +14,8 @@ public abstract class SmartEnum<T>(int value, string displayName) : ISmartEnum<T
         FrozenDictionary<string, T> Names,
         FrozenDictionary<string, T> Displays,
         FrozenDictionary<int, T> Values,
-        IReadOnlyCollection<SmartEnumRawItem> AllowedValuesList,
-        string InlineValues);
+        string InlineValues,
+        string OpenApiDescription);
 
     // Этот Lazy отработает ОДИН раз для каждого класса-наследника.
     // Как только метод выполнится, локальный список 'fields' удалится из памяти навсегда.
@@ -31,14 +31,20 @@ public abstract class SmartEnum<T>(int value, string displayName) : ISmartEnum<T
         var displays = fields.ToFrozenDictionary(static x => x.Instance.ToString(), static x => x.Instance, StringComparer.OrdinalIgnoreCase);
         var values = fields.ToFrozenDictionary(static x => x.Instance.Value, static x => x.Instance);
 
-        var allowedValuesList = fields
-                .Select(static x => new SmartEnumRawItem(x.Instance.Value, x.FieldName, x.Instance.ToString()))
-                .ToArray()
-                .AsReadOnly();
-        
-        var inlineValues = string.Join(", ", allowedValuesList.Select(static x => $"{x.Value} - {x.Name} ({x.Display})"));
+        var inlineValues = string.Join(", ", fields.Select(static x => $"{x.Instance.Value} - {x.FieldName} ({x.Instance})"));
 
-        return new EnumMetadata(names, displays, values, allowedValuesList, inlineValues);
+        // Формируем Markdown ОДИН раз для всего типа T при старте
+        var openApiBuilder = new StringBuilder(256);
+        openApiBuilder.AppendLine("Доступные значения:");
+        foreach (var (FieldName, Instance) in fields)
+        {
+            openApiBuilder.Append("* **").Append(Instance.Value)
+                          .Append("** — ").Append(FieldName)
+                          .Append(" (").Append(Instance.ToString()).AppendLine(")");
+        }
+        var openApiDescription = openApiBuilder.ToString().TrimEnd();
+
+        return new EnumMetadata(names, displays, values, inlineValues, openApiDescription);
     });
 
     public int Value { get; } = value;
@@ -48,8 +54,8 @@ public abstract class SmartEnum<T>(int value, string displayName) : ISmartEnum<T
 
     public static IEnumerable<T> GetAll() => Metadata.Value.Values.Values;
 
-    public static IReadOnlyCollection<SmartEnumRawItem> GetRawAllowedValues() =>
-        Metadata.Value.AllowedValuesList;
+    public static string GetOpenApiDescription() =>
+        Metadata.Value.OpenApiDescription;
 
     public static string GetInvalidValueMessage(object? value) =>
         $"Значение '{value}' невалидно для {typeof(T).Name}. Допустимые варианты: [{Metadata.Value.InlineValues}].";

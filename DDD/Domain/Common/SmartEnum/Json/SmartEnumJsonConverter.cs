@@ -21,6 +21,9 @@ public class SmartEnumJsonConverter<T> : JsonConverter<T> where T : SmartEnum<T>
         {
             string? rawValue = reader.GetString();
 
+            if (string.IsNullOrWhiteSpace(rawValue))
+                return null;
+
             // 2.1. Поиск по C# имени свойства (O(1)) -> например, "Processing"
             if (SmartEnum<T>.TryParse(rawValue, out var resultByName))
                 return resultByName;
@@ -46,13 +49,6 @@ public class SmartEnumJsonConverter<T> : JsonConverter<T> where T : SmartEnum<T>
 
     public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
     {
-        // Безопасная обработка null-значений, если энам не был инициализирован
-        if (value is null)
-        {
-            writer.WriteNullValue();
-            return;
-        }
-
         // При сериализации API всегда отдает лаконичное числовое значение
         writer.WriteNumberValue(value.Value);
     }
