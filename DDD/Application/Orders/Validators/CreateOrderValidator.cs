@@ -8,8 +8,5 @@ public class CreateOrderValidator : AbstractValidator<CreateOrderDto>
     {
         RuleFor(x => x.CustomerName)
             .NotEmpty().WithMessage("Имя клиента обязательно.");
-
-        RuleFor(x => x.Status)
-            .NotNull().WithMessage("Статус заказа обязателен.");
     }
 }

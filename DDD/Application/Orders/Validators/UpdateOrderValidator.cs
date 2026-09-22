@@ -2,7 +2,7 @@
 
 namespace DDD.Application.Orders.Validators;
 
-public class UpdateOrderValidator : AbstractValidator<CreateOrderDto>
+public class UpdateOrderValidator : AbstractValidator<UpdateOrderDto>
 {
     public UpdateOrderValidator()
     {

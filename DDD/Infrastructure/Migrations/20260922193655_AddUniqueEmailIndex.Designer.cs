@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using DDD.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DDD.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260922193655_AddUniqueEmailIndex")]
+    partial class AddUniqueEmailIndex
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.20");
@@ -40,22 +43,6 @@ namespace DDD.Infrastructure.Migrations
                                 .HasMaxLength(200)
                                 .HasColumnType("TEXT")
                                 .HasColumnName("CustomerName");
-                        });
-
-                    b.ComplexProperty<Dictionary<string, object>>("Price", "DDD.Domain.Entities.Order.Price#Money", b1 =>
-                        {
-                            b1.IsRequired();
-
-                            b1.Property<decimal>("Amount")
-                                .HasPrecision(18, 2)
-                                .HasColumnType("TEXT")
-                                .HasColumnName("PriceAmount");
-
-                            b1.Property<string>("Currency")
-                                .IsRequired()
-                                .HasMaxLength(3)
-                                .HasColumnType("TEXT")
-                                .HasColumnName("PriceCurrency");
                         });
 
                     b.HasKey("Id");

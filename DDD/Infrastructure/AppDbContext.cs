@@ -1,6 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
-using DDD.Domain.Entities;
+﻿using DDD.Domain.Entities;
 using DDD.Infrastructure.Extensions;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace DDD.Infrastructure;
 
@@ -15,6 +16,6 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
 
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
 
-        modelBuilder.SmartEnumConfiguration();
+        modelBuilder.SmartEnumConfiguration(); 
     }
 }
