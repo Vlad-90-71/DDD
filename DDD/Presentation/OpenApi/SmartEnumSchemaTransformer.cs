@@ -1,7 +1,7 @@
-﻿using DDD.Domain.Common.SmartEnum;
-using Microsoft.AspNetCore.OpenApi;
+﻿using System.Reflection;
 using Microsoft.OpenApi.Models;
-using System.Reflection;
+using Microsoft.AspNetCore.OpenApi;
+using DDD.Domain.Common.SmartEnum;
 
 namespace DDD.Presentation.OpenApi;
 

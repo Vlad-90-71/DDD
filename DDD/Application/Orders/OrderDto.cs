@@ -1,6 +1,4 @@
-﻿using DDD.Domain.Enums;
-
-namespace DDD.Application.Orders;
+﻿namespace DDD.Application.Orders;
 
 public record MoneyDto(decimal Amount, string Currency);
 public record UpdateMoneyDto(decimal? Amount = null, string? Currency = null);

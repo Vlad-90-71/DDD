@@ -1,10 +1,11 @@
-﻿using DDD.Domain.Common.ValueObjects;
-using DDD.Domain.Entities;
-using DDD.Domain.Enums;
-using DDD.Infrastructure;
-using FluentValidation;
+﻿using System.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using FluentValidation;
+using DDD.Domain.Enums;
+using DDD.Domain.Entities;
+using DDD.Domain.Common.ValueObjects;
+using DDD.Infrastructure;
 
 namespace DDD.Application.Orders;
 
@@ -21,10 +22,25 @@ public interface IOrderService
     Task<OrderResponse> CreateOrderAsync(CreateOrderDto dto, CancellationToken cancellationToken);
     Task<OrderResponse?> UpdateOrderAsync(int id, UpdateOrderDto dto, CancellationToken cancellationToken);
     Task<bool> DeleteOrderAsync(int id, CancellationToken cancellationToken);
+    Task Test(CancellationToken cancellationToken);
 }
 
 public class OrderService(AppDbContext context) : IOrderService
 {
+    public async Task Test(CancellationToken cancellationToken)
+    {
+        int id = 2;
+
+        var order = await context.Orders.FindAsync([id], cancellationToken) ?? 
+            throw new ArgumentNullException();
+
+        order.NewOrder();
+        order.StartProcessing();
+        await context.SaveChangesAsync(cancellationToken);
+
+        await ShipAsync(id, cancellationToken);
+    }
+
     public async Task<OrderResponse?> GetOrderByIdAsync(int id, CancellationToken cancellationToken)
     {
         var order = await context.Orders.FindAsync([id], cancellationToken);

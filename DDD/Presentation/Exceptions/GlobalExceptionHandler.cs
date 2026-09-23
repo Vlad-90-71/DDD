@@ -1,8 +1,8 @@
-﻿using DDD.Application.Orders;
-using FluentValidation;
-using Microsoft.AspNetCore.Diagnostics;
+﻿using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
-using System.Text.Json;
+using Microsoft.AspNetCore.Diagnostics;
+using FluentValidation;
+using DDD.Application.Orders;
 
 namespace DDD.Presentation.Exceptions;
 

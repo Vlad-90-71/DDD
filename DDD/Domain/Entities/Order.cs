@@ -1,9 +1,12 @@
-﻿using DDD.Domain.Common.Events;
+﻿using DDD.Domain.Enums;
+using DDD.Domain.Common.Events;
 using DDD.Domain.Common.ValueObjects;
-using DDD.Domain.Entities.Events;
-using DDD.Domain.Enums;
 
 namespace DDD.Domain.Entities;
+
+public sealed record OrderProcessingStartedEvent(int OrderId) : IDomainEvent;
+public sealed record OrderShippedEvent(int OrderId) : IDomainEvent;
+public sealed record OrderCanceledEvent(int OrderId) : IDomainEvent;
 
 public class Order
 {
@@ -15,6 +18,9 @@ public class Order
     public Email Email { get; private set; } = null!;
     public Money Price { get; private set; } = null!;
     public OrderStatus Status { get; private set; } = OrderStatus.New;
+
+    public IReadOnlyCollection<IDomainEvent> DomainEvents =>
+        _domainEvents.AsReadOnly();
 
     public Order(CustomerName customerName, Email email, Money price)
     {
@@ -30,7 +36,6 @@ public class Order
     private Order()
     {
     }
-
     public void RenameCustomer(string customerName)
     {
         EnsureOrderCanBeModified();
@@ -61,11 +66,14 @@ public class Order
         Price = new Money(amount, Price.Currency);
     }
 
+    public void NewOrder() => Status = OrderStatus.New;
     public void StartProcessing()
     {
         EnsureStatus(OrderStatus.New);
 
         Status = OrderStatus.Processing;
+
+        _domainEvents.Add(new OrderProcessingStartedEvent(Id));
     }
 
     public void Ship()
@@ -88,10 +96,9 @@ public class Order
                 "Заказ уже отменен.");
 
         Status = OrderStatus.Canceled;
-    }
-    public IReadOnlyCollection<IDomainEvent> DomainEvents =>
-        _domainEvents.AsReadOnly();
 
+        _domainEvents.Add(new OrderCanceledEvent(Id));
+    }
     public void ClearDomainEvents()
     {
         _domainEvents.Clear();

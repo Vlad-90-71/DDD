@@ -1,6 +1,5 @@
-﻿using DDD.Application.Orders;
-using DDD.Domain.Common.ValueObjects;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
+using DDD.Application.Orders;
 
 namespace DDD.Controllers;
 
@@ -9,16 +8,12 @@ namespace DDD.Controllers;
 public class OrdersController(IOrderService orderService) : ControllerBase
 {
     [HttpGet("test")]
-    public ActionResult<string> Test()
+    public async Task<ActionResult<string>> Test(CancellationToken cancellationToken)
     {
-        var a = new Money(100, "usd");
-        var b = new Money(100, "USD");
-        var c = new Money(200, "USD");
 
-        List<bool> xx = [a == b, a == c, a.Equals(b)];
+        await orderService.Test(cancellationToken);
 
-
-        return Ok(string.Join(", ", xx));
+        return Ok("Ok");
     }
 
     [HttpGet("{id:int}")]
