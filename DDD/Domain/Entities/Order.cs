@@ -1,26 +1,21 @@
-﻿using DDD.Domain.Enums;
+﻿using DDD.Domain.Common;
 using DDD.Domain.Common.Events;
 using DDD.Domain.Common.ValueObjects;
+using DDD.Domain.Enums;
 
 namespace DDD.Domain.Entities;
 
-public sealed record OrderProcessingStartedEvent(int OrderId) : IDomainEvent;
-public sealed record OrderShippedEvent(int OrderId) : IDomainEvent;
-public sealed record OrderCanceledEvent(int OrderId) : IDomainEvent;
+public sealed record OrderProcessingStartedEvent(int OrderId) : DomainEvent;
+public sealed record OrderShippedEvent(int OrderId) : DomainEvent;
+public sealed record OrderCanceledEvent(int OrderId) : DomainEvent;
 
-public class Order
+public class Order : AggregateRoot
 {
-    private readonly List<IDomainEvent> _domainEvents = [];
-
     public int Id { get; private set; }
-
     public CustomerName CustomerName { get; private set; } = null!;
     public Email Email { get; private set; } = null!;
     public Money Price { get; private set; } = null!;
     public OrderStatus Status { get; private set; } = OrderStatus.New;
-
-    public IReadOnlyCollection<IDomainEvent> DomainEvents =>
-        _domainEvents.AsReadOnly();
 
     public Order(CustomerName customerName, Email email, Money price)
     {
@@ -42,7 +37,6 @@ public class Order
 
         CustomerName = new CustomerName(customerName);
     }
-
     public void ChangeEmail(Email email)
     {
         ArgumentNullException.ThrowIfNull(email);
@@ -50,7 +44,6 @@ public class Order
 
         Email = email;
     }
-
     public void ChangePrice(Money price)
     {
         ArgumentNullException.ThrowIfNull(price);
@@ -58,7 +51,6 @@ public class Order
 
         Price = price;
     }
-
     public void ChangePriceAmount(decimal amount)
     {
         EnsureOrderCanBeModified();
@@ -73,18 +65,16 @@ public class Order
 
         Status = OrderStatus.Processing;
 
-        _domainEvents.Add(new OrderProcessingStartedEvent(Id));
+        AddDomainEvent(new OrderProcessingStartedEvent(Id));
     }
-
     public void Ship()
     {
         EnsureStatus(OrderStatus.Processing);
 
         Status = OrderStatus.Shipped;
 
-        _domainEvents.Add(new OrderShippedEvent(Id));
+        AddDomainEvent(new OrderShippedEvent(Id));
     }
-
     public void Cancel()
     {
         if (Status == OrderStatus.Shipped)
@@ -97,12 +87,9 @@ public class Order
 
         Status = OrderStatus.Canceled;
 
-        _domainEvents.Add(new OrderCanceledEvent(Id));
+        AddDomainEvent(new OrderCanceledEvent(Id));
     }
-    public void ClearDomainEvents()
-    {
-        _domainEvents.Clear();
-    }
+    
     private void EnsureOrderCanBeModified()
     {
         if (Status == OrderStatus.Shipped)

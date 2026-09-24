@@ -1,14 +1,31 @@
-﻿using DDD.Domain.Entities;
+﻿using Microsoft.EntityFrameworkCore;
+using DDD.Domain.Entities;
+using DDD.Infrastructure;
+using DDD.Infrastructure.Outbox;
 using DDD.Application.Common.Events;
+using DDD.Infrastructure.Log;
 
 namespace DDD.Application.Orders.Events;
 
-public class OrderCanceledEventHandler : IDomainEventHandler<OrderCanceledEvent>
+public class OrderCanceledEventHandler(AppDbContext context) 
+    : IDomainEventHandler<OrderCanceledEvent>
 {
-    public Task HandleAsync(OrderCanceledEvent domainEvent, CancellationToken cancellationToken)
+    public async Task HandleAsync(OrderCanceledEvent domainEvent, CancellationToken cancellationToken)
     {
-        Console.WriteLine($"Заказ {domainEvent.OrderId} отменен.");
+        var alreadyProcessed = await context.ProcessedEvents
+            .AnyAsync(x => x.EventId == domainEvent.EventId, cancellationToken);
 
-        return Task.CompletedTask;
+        if (alreadyProcessed)
+            return;
+
+        context.EventLogs.Add(
+            new EventLog(
+                domainEvent.EventId,
+                nameof(OrderCanceledEvent),
+                $"Заказ {domainEvent.OrderId} отменен.",
+                DateTime.UtcNow));
+
+        context.ProcessedEvents.Add(
+            new ProcessedEvent(domainEvent.EventId, DateTime.UtcNow));
     }
 }

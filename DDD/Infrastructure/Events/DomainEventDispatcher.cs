@@ -1,5 +1,4 @@
-﻿using DDD.Domain.Entities;
-using DDD.Domain.Common.Events;
+﻿using DDD.Domain.Common.Events;
 using DDD.Application.Common.Events;
 
 namespace DDD.Infrastructure.Events;

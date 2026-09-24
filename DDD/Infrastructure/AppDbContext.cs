@@ -1,18 +1,20 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using DDD.Domain.Common;
 using DDD.Domain.Entities;
+using DDD.Infrastructure.Outbox;
 using DDD.Infrastructure.Extensions;
-using DDD.Application.Common.Events;
+using DDD.Infrastructure.Log;
 
 namespace DDD.Infrastructure;
 
 public class AppDbContext(
     DbContextOptions<AppDbContext> options,
-    IDomainEventDispatcher domainEventDispatcher) : DbContext(options)
+    IOutboxMessageSerializer outboxMessageSerializer) : DbContext(options)
 {
-    private readonly IDomainEventDispatcher _domainEventDispatcher =
-        domainEventDispatcher;
-
-   public DbSet<Order> Orders { get; set; }
+    public DbSet<Order> Orders => Set<Order>();
+    public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
+    public DbSet<ProcessedEvent> ProcessedEvents => Set<ProcessedEvent>();
+    public DbSet<EventLog> EventLogs => Set<EventLog>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -23,24 +25,28 @@ public class AppDbContext(
         modelBuilder.SmartEnumConfiguration(); 
     }
 
-    public override async Task<int> SaveChangesAsync(
-    CancellationToken cancellationToken = default)
+    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        var domainEvents = ChangeTracker
-            .Entries<Order>()
-            .SelectMany(x => x.Entity.DomainEvents)
+        var aggregates = ChangeTracker
+            .Entries()
+            .Select(x => x.Entity)
+            .OfType<IAggregateRoot>()
             .ToList();
 
-        var result = await base.SaveChangesAsync(cancellationToken);
+        var domainEvents = aggregates
+            .SelectMany(x => x.DomainEvents)
+            .ToList();
 
         foreach (var domainEvent in domainEvents)
         {
-            await _domainEventDispatcher.DispatchAsync(domainEvent, cancellationToken);
+            OutboxMessages.Add(outboxMessageSerializer.Serialize(domainEvent));
         }
 
-        foreach (var entry in ChangeTracker.Entries<Order>())
+        var result = await base.SaveChangesAsync(cancellationToken);
+
+        foreach (var aggregate in aggregates)
         {
-            entry.Entity.ClearDomainEvents();
+            aggregate.ClearDomainEvents();
         }
 
         return result;

@@ -1,5 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using DDD.Application.Common;
 using DDD.Application.Orders;
+using Microsoft.AspNetCore.Mvc;
 
 namespace DDD.Controllers;
 
@@ -14,6 +15,25 @@ public class OrdersController(IOrderService orderService) : ControllerBase
         await orderService.Test(cancellationToken);
 
         return Ok("Ok");
+    }
+
+    [HttpPost("debug/failure/{enabled:bool}")]
+    public IActionResult SetFailureSimulation(bool enabled, [FromServices] IFailureSimulator failureSimulator)
+    {
+        failureSimulator.Enabled = enabled;
+
+        return Ok(new
+        {
+            failureSimulation = failureSimulator.Enabled
+        });
+    }
+
+    [HttpPost("debug/outbox/{id:long}/redeliver")]
+    public async Task<IActionResult> Redeliver(long id, CancellationToken cancellationToken)
+    {
+        await orderService.RedeliverOutboxMessageAsync(id, cancellationToken);
+
+        return Ok();
     }
 
     [HttpGet("{id:int}")]

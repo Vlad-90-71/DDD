@@ -20,11 +20,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Application\Common\Exceptions\" />
-    <Folder Include="Application\Common\Interfaces\" />
     <Folder Include="Application\Orders\Dto\" />
     <Folder Include="Db\" />
     <Folder Include="Presentation\Common\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DDD.MessageBroker.Contracts\DDD.MessageBroker.Contracts.csproj" />
   </ItemGroup>
 
 </Project>

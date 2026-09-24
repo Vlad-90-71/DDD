@@ -1,11 +1,14 @@
-﻿using System.Data;
+﻿using DDD.Application.Common.Events;
+using DDD.Domain.Common.Events;
+using DDD.Domain.Common.ValueObjects;
+using DDD.Domain.Entities;
+using DDD.Domain.Enums;
+using DDD.Infrastructure;
+using DDD.Infrastructure.Outbox;
+using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using FluentValidation;
-using DDD.Domain.Enums;
-using DDD.Domain.Entities;
-using DDD.Domain.Common.ValueObjects;
-using DDD.Infrastructure;
+using System.Data;
 
 namespace DDD.Application.Orders;
 
@@ -23,16 +26,37 @@ public interface IOrderService
     Task<OrderResponse?> UpdateOrderAsync(int id, UpdateOrderDto dto, CancellationToken cancellationToken);
     Task<bool> DeleteOrderAsync(int id, CancellationToken cancellationToken);
     Task Test(CancellationToken cancellationToken);
+    Task RedeliverOutboxMessageAsync(long id, CancellationToken cancellationToken);
 }
 
-public class OrderService(AppDbContext context) : IOrderService
+public class OrderService(
+    AppDbContext context,
+    IDomainEventDispatcher dispatcher,
+    IOutboxMessageSerializer serializer) : IOrderService
 {
+    public async Task RedeliverOutboxMessageAsync(long id, CancellationToken cancellationToken)
+    {
+        var message = await context.OutboxMessages
+            .FirstOrDefaultAsync(
+                x => x.Id == id,
+                cancellationToken);
+
+        if (message is null)
+            throw new InvalidOperationException(
+                $"OutboxMessage {id} не найден.");
+
+        var domainEvent = serializer.Deserialize(message);
+
+        await dispatcher.DispatchAsync(domainEvent, cancellationToken);
+
+        await context.SaveChangesAsync(cancellationToken);
+    }
     public async Task Test(CancellationToken cancellationToken)
     {
         int id = 2;
 
-        var order = await context.Orders.FindAsync([id], cancellationToken) ?? 
-            throw new ArgumentNullException();
+        var order = await context.Orders.FindAsync([id], cancellationToken); 
+        if (order is null) ArgumentNullException.ThrowIfNull($"Заказ с Id '{id}' не найден.");
 
         order.NewOrder();
         order.StartProcessing();

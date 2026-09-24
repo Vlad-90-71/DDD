@@ -1,9 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.14.36408.4 d17.14
+# Visual Studio Version 18
+VisualStudioVersion = 18.10.12217.157 stable
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DDD", "DDD\DDD.csproj", "{C349D528-859C-4020-8274-20F1ED7BB413}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DDD.MessageBroker.InMemory", "DDD.MessageBroker.InMemory\DDD.MessageBroker.InMemory.csproj", "{8A06A189-2F63-43B6-BB76-4DFD26DFDD91}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DDD.MessageBroker.Contracts", "DDD.MessageBroker.Contracts\DDD.MessageBroker.Contracts.csproj", "{6D3B9489-DD12-4C66-AC49-010C4CCB63EF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +19,14 @@ Global
 		{C349D528-859C-4020-8274-20F1ED7BB413}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C349D528-859C-4020-8274-20F1ED7BB413}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C349D528-859C-4020-8274-20F1ED7BB413}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8A06A189-2F63-43B6-BB76-4DFD26DFDD91}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8A06A189-2F63-43B6-BB76-4DFD26DFDD91}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8A06A189-2F63-43B6-BB76-4DFD26DFDD91}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8A06A189-2F63-43B6-BB76-4DFD26DFDD91}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6D3B9489-DD12-4C66-AC49-010C4CCB63EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6D3B9489-DD12-4C66-AC49-010C4CCB63EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6D3B9489-DD12-4C66-AC49-010C4CCB63EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6D3B9489-DD12-4C66-AC49-010C4CCB63EF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

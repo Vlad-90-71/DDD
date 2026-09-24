@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using DDD.Infrastructure;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DDD.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260924130841_AddOutboxRetryInfo")]
+    partial class AddOutboxRetryInfo
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "9.0.20");
@@ -71,61 +74,17 @@ namespace DDD.Infrastructure.Migrations
                     b.ToTable("Orders");
                 });
 
-            modelBuilder.Entity("DDD.Infrastructure.Log.EventLog", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime>("CreatedOnUtc")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("EventId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("EventType")
-                        .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Message")
-                        .IsRequired()
-                        .HasMaxLength(2000)
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EventId");
-
-                    b.ToTable("EventLogs", (string)null);
-                });
-
             modelBuilder.Entity("DDD.Infrastructure.Outbox.OutboxMessage", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<Guid?>("ClaimToken")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("ClaimedUntilUtc")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("Content")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Error")
-                        .HasColumnType("TEXT");
-
-                    b.Property<Guid>("EventId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("FailedOnUtc")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("NextAttemptOnUtc")
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("OccurredOnUtc")
@@ -144,26 +103,7 @@ namespace DDD.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("EventId")
-                        .IsUnique();
-
-                    b.HasIndex("ProcessedOnUtc", "ClaimedUntilUtc");
-
                     b.ToTable("OutboxMessages");
-                });
-
-            modelBuilder.Entity("DDD.Infrastructure.Outbox.ProcessedEvent", b =>
-                {
-                    b.Property<Guid>("EventId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime>("ProcessedOnUtc")
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("EventId");
-
-                    b.ToTable("ProcessedEvents");
                 });
 #pragma warning restore 612, 618
         }
