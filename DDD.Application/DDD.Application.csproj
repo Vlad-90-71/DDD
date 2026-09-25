@@ -7,8 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\DDD.Domain\DDD.Domain.csproj" />
     <ProjectReference Include="..\DDD.Eventing.Contracts\DDD.Eventing.Contracts.csproj" />
-    <ProjectReference Include="..\DDD.MessageBroker.Contracts\DDD.MessageBroker.Contracts.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentValidation" Version="12.1.1" />
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
   </ItemGroup>
 
 </Project>

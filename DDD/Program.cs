@@ -1,4 +1,7 @@
 using Scalar.AspNetCore;
+using DDD.Extensions;
+using DDD.Application.Extensions;
+using DDD.Infrastructure.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 

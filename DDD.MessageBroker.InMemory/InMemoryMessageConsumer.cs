@@ -1,5 +1,4 @@
-﻿using DDD.Application.Common.Events;
-using DDD.MessageBroker.Contracts;
+﻿using DDD.Eventing.Contracts;
 
 namespace DDD.MessageBroker.InMemory;
 

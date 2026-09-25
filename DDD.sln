@@ -1,13 +1,21 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
-VisualStudioVersion = 18.10.12217.157 stable
+VisualStudioVersion = 18.10.12217.157
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DDD", "DDD\DDD.csproj", "{C349D528-859C-4020-8274-20F1ED7BB413}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DDD.MessageBroker.InMemory", "DDD.MessageBroker.InMemory\DDD.MessageBroker.InMemory.csproj", "{8A06A189-2F63-43B6-BB76-4DFD26DFDD91}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DDD.MessageBroker.Contracts", "DDD.MessageBroker.Contracts\DDD.MessageBroker.Contracts.csproj", "{6D3B9489-DD12-4C66-AC49-010C4CCB63EF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DDD.Eventing.Contracts", "DDD.Eventing.Contracts\DDD.Eventing.Contracts.csproj", "{757ED1AE-0861-4828-9E71-D8802514B147}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DDD.Domain", "DDD.Domain\DDD.Domain.csproj", "{374A9C2C-7A40-45A3-8495-E36BDB913ACA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DDD.Application", "DDD.Application\DDD.Application.csproj", "{8425ECDC-4FF3-478D-9D57-25D9EB6ECA27}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DDD.Infrastructure", "DDD.Infrastructure\DDD.Infrastructure.csproj", "{9BD27A9B-8B25-4919-BCB8-B3EC5F870EE8}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,6 +35,22 @@ Global
 		{6D3B9489-DD12-4C66-AC49-010C4CCB63EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6D3B9489-DD12-4C66-AC49-010C4CCB63EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6D3B9489-DD12-4C66-AC49-010C4CCB63EF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{757ED1AE-0861-4828-9E71-D8802514B147}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{757ED1AE-0861-4828-9E71-D8802514B147}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{757ED1AE-0861-4828-9E71-D8802514B147}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{757ED1AE-0861-4828-9E71-D8802514B147}.Release|Any CPU.Build.0 = Release|Any CPU
+		{374A9C2C-7A40-45A3-8495-E36BDB913ACA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{374A9C2C-7A40-45A3-8495-E36BDB913ACA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{374A9C2C-7A40-45A3-8495-E36BDB913ACA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{374A9C2C-7A40-45A3-8495-E36BDB913ACA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8425ECDC-4FF3-478D-9D57-25D9EB6ECA27}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8425ECDC-4FF3-478D-9D57-25D9EB6ECA27}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8425ECDC-4FF3-478D-9D57-25D9EB6ECA27}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8425ECDC-4FF3-478D-9D57-25D9EB6ECA27}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9BD27A9B-8B25-4919-BCB8-B3EC5F870EE8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9BD27A9B-8B25-4919-BCB8-B3EC5F870EE8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9BD27A9B-8B25-4919-BCB8-B3EC5F870EE8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9BD27A9B-8B25-4919-BCB8-B3EC5F870EE8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

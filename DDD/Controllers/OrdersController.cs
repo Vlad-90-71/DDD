@@ -1,12 +1,14 @@
 ﻿using DDD.Application.Common;
-using DDD.Application.Orders;
+using DDD.Application.Services;
+using DDD.Application.Services.Dto;
+using DDD.Infrastructure.Outbox;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DDD.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class OrdersController(IOrderService orderService) : ControllerBase
+public class OrdersController(IOrderService orderService, IOutboxService outboxService) : ControllerBase
 {
     [HttpGet("test")]
     public async Task<ActionResult<string>> Test(CancellationToken cancellationToken)
@@ -31,7 +33,7 @@ public class OrdersController(IOrderService orderService) : ControllerBase
     [HttpPost("debug/outbox/{id:long}/redeliver")]
     public async Task<IActionResult> Redeliver(long id, CancellationToken cancellationToken)
     {
-        await orderService.RedeliverOutboxMessageAsync(id, cancellationToken);
+        await outboxService.RedeliverAsync(id, cancellationToken);
 
         return Ok();
     }
