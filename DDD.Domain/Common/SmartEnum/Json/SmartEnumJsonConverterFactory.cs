@@ -1,74 +1,50 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Collections.Concurrent;
 
 namespace DDD.Domain.Common.SmartEnum.Json;
-/*
-public class SmartEnumJsonConverterFactory : JsonConverterFactory
+
+public sealed class SmartEnumJsonConverterFactory : JsonConverterFactory
 {
+    // Кэш для созданных конвертеров, чтобы избежать постоянного MakeGenericType и Activator
+    private static readonly ConcurrentDictionary<Type, JsonConverter> ConverterCache = new();
+
     public override bool CanConvert(Type typeToConvert)
     {
-        return typeToConvert.BaseType is { IsGenericType: true } &&
-               typeToConvert.BaseType.GetGenericTypeDefinition() == typeof(SmartEnum<>);
+        var type = Nullable.GetUnderlyingType(typeToConvert) ?? typeToConvert;
+        return IsSmartEnum(type);
     }
 
     public override JsonConverter? CreateConverter(Type typeToConvert, JsonSerializerOptions options)
     {
-        var converterType = typeof(SmartEnumJsonConverter<>).MakeGenericType(typeToConvert);
-        return Activator.CreateInstance(converterType) as JsonConverter;
-    }
-}
-*/
+        var type = Nullable.GetUnderlyingType(typeToConvert) ?? typeToConvert;
 
-public sealed class SmartEnumJsonConverterFactory : JsonConverterFactory
-{
-    private static readonly Type ConverterType =
-        typeof(SmartEnumJsonConverter<>);
-
-    public override bool CanConvert(Type typeToConvert)
-    {
-        var type = Nullable.GetUnderlyingType(typeToConvert)
-                   ?? typeToConvert;
-
-        return IsSmartEnum(type);
-    }
-
-    public override JsonConverter CreateConverter(
-        Type typeToConvert,
-        JsonSerializerOptions options)
-    {
-        var type = Nullable.GetUnderlyingType(typeToConvert)
-                   ?? typeToConvert;
-
-        if (!IsSmartEnum(type))
+        // Используем фабрику внутри GetOrAdd для потокобезопасного кэширования
+        return ConverterCache.GetOrAdd(typeToConvert, t =>
         {
-            throw new InvalidOperationException(
-                $"Тип '{typeToConvert}' не является SmartEnum<T>.");
-        }
+            if (!IsSmartEnum(type))
+            {
+                throw new InvalidOperationException($"Тип '{t}' не является SmartEnum<T>.");
+            }
 
-        var converterType = ConverterType.MakeGenericType(type);
-
-        return (JsonConverter)Activator.CreateInstance(
-            converterType)!;
+            var converterType = typeof(SmartEnumJsonConverter<>).MakeGenericType(type);
+            return (JsonConverter)Activator.CreateInstance(converterType)!;
+        });
     }
 
     private static bool IsSmartEnum(Type type)
     {
-        return FindSmartEnumBase(type) is not null;
-    }
-
-    private static Type? FindSmartEnumBase(Type type)
-    {
-        for (var current = type;
-             current is not null && current != typeof(object);
-             current = current.BaseType)
+        // Проверяем иерархию типов более современным способом
+        for (var current = type; 
+            current is not null && current != typeof(object);
+            current = current.BaseType)
         {
-            if (current.IsGenericType &&
-                current.GetGenericTypeDefinition() == typeof(SmartEnum<>))
+            if (current.IsGenericType && current.GetGenericTypeDefinition() == typeof(SmartEnum<>))
             {
-                return current;
+                return true;
             }
         }
 
-        return null;
+        return false;
     }
 }

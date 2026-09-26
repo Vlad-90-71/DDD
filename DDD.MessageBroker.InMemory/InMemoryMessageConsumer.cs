@@ -1,43 +1,35 @@
-﻿using DDD.Eventing.Contracts;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using DDD.Eventing.Contracts;
 
 namespace DDD.MessageBroker.InMemory;
 
 public sealed class InMemoryMessageConsumer(
     InMemoryMessageBroker broker,
     IDomainEventSerializer serializer,
-    IDomainEventDispatcher dispatcher)
+    IServiceScopeFactory scopeFactory) : BackgroundService
 {
-    public async Task ConsumeAsync(
-        CancellationToken cancellationToken)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        while (!cancellationToken.IsCancellationRequested)
+        while (!stoppingToken.IsCancellationRequested)
         {
-            var delivery = await broker.ReceiveAsync(
-                cancellationToken);
+            var delivery = await broker.ReceiveAsync(stoppingToken);
 
             try
             {
-                var domainEvent = serializer.Deserialize(
-                    delivery.Message.Type,
-                    delivery.Message.Content);
+                var domainEvent = serializer.Deserialize(delivery.Message.Type, delivery.Message.Content);
 
-                await dispatcher.DispatchAsync(
-                    domainEvent,
-                    cancellationToken);
+                using var scope = scopeFactory.CreateScope();
 
-                await broker.AckAsync(
-                    delivery.DeliveryId,
-                    cancellationToken);
+                var dispatcher = scope.ServiceProvider.GetRequiredService<IDomainEventDispatcher>();
+
+                await dispatcher.DispatchAsync(domainEvent, stoppingToken);
+
+                broker.AckAsync(delivery.DeliveryId);
             }
             catch
             {
-                await broker.NackAsync(
-                    delivery.DeliveryId,
-                    requeue: true,
-                    cancellationToken);
-
-                // Не проглатываем ошибку.
-                // Но Consumer продолжает работать.
+                await broker.NackAsync(delivery.DeliveryId, requeue: true, stoppingToken);
             }
         }
     }

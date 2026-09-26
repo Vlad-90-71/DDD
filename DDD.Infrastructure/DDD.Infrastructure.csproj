@@ -23,4 +23,8 @@
     <ProjectReference Include="..\DDD.MessageBroker.Contracts\DDD.MessageBroker.Contracts.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Messaging\" />
+  </ItemGroup>
+
 </Project>

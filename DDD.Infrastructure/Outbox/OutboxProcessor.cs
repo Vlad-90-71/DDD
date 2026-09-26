@@ -1,12 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using DDD.Eventing.Contracts;
+using DDD.MessageBroker.Contracts;
 
 namespace DDD.Infrastructure.Outbox;
 
-public class OutboxProcessor(
-    AppDbContext context,
-    IOutboxMessageSerializer serializer,
-    IDomainEventDispatcher dispatcher)
+public class OutboxProcessor(AppDbContext context, IMessagePublisher publisher)
 {
     private const int MaxRetryCount = 5;
 
@@ -20,9 +17,9 @@ public class OutboxProcessor(
         {
             try
             {
-                var domainEvent = serializer.Deserialize(message);
+                var brokerMessage = new BrokerMessage(message.EventId, message.Type, message.Content);
 
-                await dispatcher.DispatchAsync(domainEvent, cancellationToken);
+                await publisher.PublishAsync(brokerMessage, cancellationToken);
 
                 message.MarkAsProcessed(DateTime.UtcNow);
             }
@@ -36,9 +33,7 @@ public class OutboxProcessor(
                 }
                 else
                 {
-                    var nextAttempt = DateTime.UtcNow
-                        .Add(GetRetryDelay(retryCount));
-
+                    var nextAttempt = DateTime.UtcNow.Add(GetRetryDelay(retryCount));
                     message.ScheduleRetry(ex.Message, nextAttempt);
                 }
             }
