@@ -6,6 +6,7 @@ namespace DDD.Infrastructure.Outbox;
 public class OutboxProcessor(AppDbContext context, IMessagePublisher publisher)
 {
     private const int MaxRetryCount = 5;
+    private const int MaxRetryDelaySeconds = 300;
 
     public async Task ProcessAsync(CancellationToken cancellationToken)
     {
@@ -83,10 +84,10 @@ public class OutboxProcessor(AppDbContext context, IMessagePublisher publisher)
     }
     private static TimeSpan GetRetryDelay(int retryCount)
     {
-        var seconds = Math.Min(Math.Pow(2, retryCount), 300);
+        var seconds = Math.Min(Math.Pow(2, retryCount), MaxRetryDelaySeconds);
 
-        return TimeSpan.FromSeconds(60);
-//        return TimeSpan.FromSeconds(seconds);
+        //return TimeSpan.FromSeconds(60);
+        return TimeSpan.FromSeconds(seconds);
 
     }
 }

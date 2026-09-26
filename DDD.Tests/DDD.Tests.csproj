@@ -22,6 +22,8 @@
   <ItemGroup>
     <ProjectReference Include="..\DDD.Application\DDD.Application.csproj" />
     <ProjectReference Include="..\DDD.Infrastructure\DDD.Infrastructure.csproj" />
+    <ProjectReference Include="..\DDD.MessageBroker.Contracts\DDD.MessageBroker.Contracts.csproj" />
+    <ProjectReference Include="..\DDD.MessageBroker.InMemory\DDD.MessageBroker.InMemory.csproj" />
     <ProjectReference Include="..\DDD\DDD.csproj" />
   </ItemGroup>
 

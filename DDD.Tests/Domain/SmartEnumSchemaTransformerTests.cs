@@ -78,13 +78,16 @@ public sealed class SmartEnumSchemaTransformerTests
             dtoTypeInfo.Properties
                 .First(x => x.Name == nameof(TestDto.NullableStatus));
 
+        var propertyTypeInfo =
+            options.GetTypeInfo(propertyInfo.PropertyType);
+
         var context = new OpenApiSchemaTransformerContext
         {
             // ВАЖНО:
             // transformer анализирует context.JsonTypeInfo.Type
             // поэтому здесь должен быть JsonTypeInfo свойства,
             // а не JsonTypeInfo всего TestDto.
-            JsonTypeInfo = propertyInfo.JsonTypeInfo,
+            JsonTypeInfo = propertyTypeInfo,
             JsonPropertyInfo = propertyInfo,
             DocumentName = "v1",
             ParameterDescription = null,
