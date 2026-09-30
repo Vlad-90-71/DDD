@@ -1,4 +1,4 @@
-﻿using DDD.Application.Common;
+﻿using DDD.Eventing.Contracts;
 
 namespace DDD.Infrastructure;
 

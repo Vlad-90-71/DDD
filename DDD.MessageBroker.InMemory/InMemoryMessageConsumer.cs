@@ -1,5 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 using DDD.Eventing.Contracts;
 
 namespace DDD.MessageBroker.InMemory;
@@ -7,7 +7,8 @@ namespace DDD.MessageBroker.InMemory;
 public sealed class InMemoryMessageConsumer(
     InMemoryMessageBroker broker,
     IDomainEventSerializer serializer,
-    IServiceScopeFactory scopeFactory) : BackgroundService
+    IServiceScopeFactory scopeFactory)
+    : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -17,7 +18,10 @@ public sealed class InMemoryMessageConsumer(
 
             try
             {
-                var domainEvent = serializer.Deserialize(delivery.Message.Type, delivery.Message.Content);
+                var domainEvent = serializer.Deserialize(
+                    delivery.Message.EventId,
+                    delivery.Message.Type,
+                    delivery.Message.Content);
 
                 using var scope = scopeFactory.CreateScope();
 
@@ -25,7 +29,11 @@ public sealed class InMemoryMessageConsumer(
 
                 await dispatcher.DispatchAsync(domainEvent, stoppingToken);
 
-                broker.AckAsync(delivery.DeliveryId);
+                var unitOfWork = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+
+                await unitOfWork.SaveChangesAsync(stoppingToken);
+
+                broker.Ack(delivery.DeliveryId);
             }
             catch
             {

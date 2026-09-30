@@ -2,7 +2,7 @@
 using DDD.Domain.Common.ValueObjects;
 using DDD.Domain.Enums;
 using DDD.Domain.Entities;
-using DDD.Application.Common;
+using DDD.Eventing.Contracts;
 using DDD.Application.Services.Dto;
 
 namespace DDD.Application.Services;

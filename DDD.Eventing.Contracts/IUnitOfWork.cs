@@ -1,4 +1,4 @@
-﻿namespace DDD.Application.Common;
+﻿namespace DDD.Eventing.Contracts;
 
 public interface IUnitOfWork
 {
