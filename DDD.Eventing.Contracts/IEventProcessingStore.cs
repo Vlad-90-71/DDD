@@ -2,9 +2,16 @@
 
 namespace DDD.Eventing.Contracts;
 
+public enum EventProcessingClaimStatus
+{
+    Claimed, AlreadyProcessed, InProgress, Failed, NoHandler
+}
+public sealed record EventProcessingClaimResult(EventProcessingClaimStatus Status, Guid EventId, Guid? ClaimToken);
+
 public interface IEventProcessingStore
 {
-    Task<bool> IsProcessedAsync(Guid eventId, CancellationToken cancellationToken);
+    Task<EventProcessingClaimResult> TryClaimAsync(Guid eventId, CancellationToken cancellationToken);
+    Task MarkAsProcessedAsync(Guid eventId, Guid claimToken, CancellationToken cancellationToken);
+    Task<bool> ReleaseClaimAsync(Guid eventId, Guid claimToken, string error, CancellationToken cancellationToken);
     void LogProcessed(IDomainEvent domainEvent);
-    void MarkAsProcessed( Guid eventId);
 }

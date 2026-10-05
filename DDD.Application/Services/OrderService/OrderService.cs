@@ -46,32 +46,9 @@ public class OrderService(IOrderRepository orders, IUnitOfWork unitOfWork) : IOr
 
         Console.WriteLine(
             $"Заказ {order.Id} находится в обработке.");
-
-        await CancelAsync(
-            order.Id,
-            cancellationToken);
-
-        Console.WriteLine(
-            $"Заказ {order.Id} отменен.");
-
-        try
-        {
-            await ShipAsync(
-                order.Id,
-                cancellationToken);
-
-            Console.WriteLine(
-                $"ОШИБКА ТЕСТА: отмененный заказ {order.Id} был доставлен.");
-
-            return;
-        }
-        catch (InvalidOperationException ex)
-        {
-            Console.WriteLine(
-                $"Корректно: попытка доставить отмененный " +
-                $"заказ {order.Id} отклонена: {ex.Message}");
-        }
     }
+
+
     private async Task WaitForOrderStatusAsync(int id, OrderStatus expectedStatus, CancellationToken cancellationToken)
     {
         const int maxAttempts = 50;

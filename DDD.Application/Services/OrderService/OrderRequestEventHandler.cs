@@ -1,30 +1,32 @@
 ﻿using DDD.Domain.Common.Events;
 using DDD.Domain.Entities.Order;
 using DDD.Eventing.Contracts;
+using System.Collections.Concurrent;
 
 namespace DDD.Application.Services.OrderService;
 
-public sealed class OrderProcessingRequestedEventHandler(IOrderRepository orders, IEventProcessingStore eventStore)
-    : OrderRequestEventHandler<OrderProcessingRequestedEvent>(orders, eventStore)
+public sealed class OrderProcessingRequestedEventHandler(IOrderRepository orders)
+    : OrderRequestEventHandler<OrderProcessingRequestedEvent>(orders)
 {
-    protected override Task HandleEventAsync(OrderProcessingRequestedEvent domainEvent, CancellationToken cancellationToken) =>
-        OrderHandleAsync(domainEvent.OrderId, order => order.Process(), cancellationToken);
+    private static readonly ConcurrentDictionary<Guid, int> Attempts = [];
+    protected override async Task HandleEventAsync(OrderProcessingRequestedEvent domainEvent, CancellationToken cancellationToken)
+    {
+        await OrderHandleAsync(domainEvent.OrderId, order => order.Process(), cancellationToken);
+        
+        var attempt = Attempts.AddOrUpdate(domainEvent.EventId, 1, (_, value) => value + 1);
+
+        Console.WriteLine($"Handler: EventId={domainEvent.EventId}, Attempt={attempt}");
+
+        if (attempt == 1)
+            throw new InvalidOperationException("TEST: ошибка первой попытки.");
+    }
 }
 
-public abstract class OrderRequestEventHandler<TEvent>(IOrderRepository orders, IEventProcessingStore eventStore)
+public abstract class OrderRequestEventHandler<TEvent>(IOrderRepository orders) 
     : IDomainEventHandler<TEvent> where TEvent : IDomainEvent
 {
-    public async Task HandleAsync(TEvent domainEvent, CancellationToken cancellationToken)
-    {
-        if (await eventStore.IsProcessedAsync(domainEvent.EventId, cancellationToken))
-            return;
-
-        await HandleEventAsync(domainEvent, cancellationToken);
-
-        eventStore.LogProcessed(domainEvent);
-
-        eventStore.MarkAsProcessed(domainEvent.EventId);
-    }
+    public Task HandleAsync(TEvent domainEvent, CancellationToken cancellationToken) =>
+        HandleEventAsync(domainEvent, cancellationToken);
 
     protected abstract Task HandleEventAsync(TEvent domainEvent, CancellationToken cancellationToken);
 

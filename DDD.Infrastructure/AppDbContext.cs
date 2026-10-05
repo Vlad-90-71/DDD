@@ -38,6 +38,10 @@ public class AppDbContext(
             {
                 OutboxMessages.AddRange(domainEvents.Select(ev => outboxMessageSerializer.Serialize(ev)));
 
+
+                ProcessedEvents.AddRange(
+                    domainEvents.Select(ev => new ProcessedEvent(ev.EventId, DateTime.UtcNow)));
+
                 EventLogs.AddRange(domainEvents.Select(ev => new EventLog(ev)));
             }
         }
