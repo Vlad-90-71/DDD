@@ -2,7 +2,7 @@
 using DDD.Domain.Enums;
 using DDD.Application.Common;
 
-namespace DDD.Application.Services.Validators;
+namespace DDD.Application.Services.OrderService.Validators;
 
 public class GetOrdersQueryValidator : AbstractValidator<GetOrdersQuery>
 {

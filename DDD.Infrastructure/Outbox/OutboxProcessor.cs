@@ -28,22 +28,21 @@ public class OutboxProcessor(AppDbContext context, IMessagePublisher publisher)
             {
                 var retryCount = message.RetryCount + 1;
 
-                if (retryCount >= MaxRetryCount)
-                {
-                    message.MarkAsFailed(ex.Message);
-                }
-                else
+                if (retryCount < MaxRetryCount)
                 {
                     var nextAttempt = DateTime.UtcNow.Add(GetRetryDelay(retryCount));
+
                     message.ScheduleRetry(ex.Message, nextAttempt);
                 }
+                else
+                    message.MarkAsFailed(ex.Message);
             }
         }
 
         await context.SaveChangesAsync(cancellationToken);
     }
 
-    private async Task<List<OutboxMessage>> ClaimMessagesAsync(Guid claimToken, CancellationToken cancellationToken)
+    private async Task<OutboxMessage[]> ClaimMessagesAsync(Guid claimToken, CancellationToken cancellationToken)
     {
         var now = DateTime.UtcNow;
         var claimedUntil = now.AddMinutes(1);
@@ -59,35 +58,32 @@ public class OutboxProcessor(AppDbContext context, IMessagePublisher publisher)
             .Select(x => x.Id)
             .ToListAsync(cancellationToken);
 
-        foreach (var id in candidates)
-        {
-            await context.OutboxMessages
-                .Where(x =>
-                    x.Id == id &&
-                    x.ProcessedOnUtc == null &&
-                    x.FailedOnUtc == null &&
-                    (x.NextAttemptOnUtc == null || x.NextAttemptOnUtc <= now) &&
-                    (x.ClaimedUntilUtc == null || x.ClaimedUntilUtc < now))
-                .ExecuteUpdateAsync(
-                    setters => setters
-                        .SetProperty(x => x.ClaimToken, claimToken)
-                        .SetProperty(x => x.ClaimedUntilUtc, claimedUntil),
-                    cancellationToken);
-        }
+        if (candidates.Count == 0)
+            return [];
+
+        await context.OutboxMessages
+            .Where(x =>
+                candidates.Contains(x.Id) &&
+                x.ProcessedOnUtc == null &&
+                x.FailedOnUtc == null &&
+                (x.NextAttemptOnUtc == null || x.NextAttemptOnUtc <= now) &&
+                (x.ClaimedUntilUtc == null || x.ClaimedUntilUtc < now))
+            .ExecuteUpdateAsync(
+                setters => setters
+                    .SetProperty(x => x.ClaimToken, claimToken)
+                    .SetProperty(x => x.ClaimedUntilUtc, claimedUntil),
+                cancellationToken);
 
         return await context.OutboxMessages
-            .Where(x =>
-                x.ClaimToken == claimToken &&
-                x.ProcessedOnUtc == null)
+            .Where(x => x.ClaimToken == claimToken && x.ProcessedOnUtc == null)
             .OrderBy(x => x.Id)
-            .ToListAsync(cancellationToken);
+            .ToArrayAsync(cancellationToken);
     }
+
     private static TimeSpan GetRetryDelay(int retryCount)
     {
         var seconds = Math.Min(Math.Pow(2, retryCount), MaxRetryDelaySeconds);
 
-        //return TimeSpan.FromSeconds(60);
         return TimeSpan.FromSeconds(seconds);
-
     }
 }

@@ -1,4 +1,6 @@
-﻿using DDD.Infrastructure;
+﻿using DDD.Domain.Common.Events;
+using DDD.Domain.Entities.Order;
+using DDD.Infrastructure;
 using DDD.Infrastructure.Events;
 using DDD.Infrastructure.Outbox;
 using Microsoft.Data.Sqlite;
@@ -101,10 +103,7 @@ public sealed class EventProcessingStoreTests
         var eventId = Guid.NewGuid();
 
         // Act
-        store.Log(
-            eventId,
-            "OrderCanceledEvent",
-            "Заказ 123 отменен.");
+        store.LogProcessed(new OrderCanceledEvent(123));
 
         await context.SaveChangesAsync();
 
@@ -169,10 +168,7 @@ public sealed class EventProcessingStoreTests
         var eventId = Guid.NewGuid();
 
         // Act
-        store.Log(
-            eventId,
-            "OrderCanceledEvent",
-            "Заказ 123 отменен.");
+        store.LogProcessed(new OrderCanceledEvent(123));
 
         await context.SaveChangesAsync();
 

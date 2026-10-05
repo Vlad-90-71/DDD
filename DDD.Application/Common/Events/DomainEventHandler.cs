@@ -11,7 +11,7 @@ public sealed class DomainEventHandler<TEvent>(IEventProcessingStore eventStore)
         if (await eventStore.IsProcessedAsync(domainEvent.EventId, cancellationToken))
             return;
 
-        eventStore.Log(domainEvent.EventId, typeof(TEvent).Name, domainEvent.Message);
+        eventStore.LogProcessed(domainEvent);
 
         eventStore.MarkAsProcessed(domainEvent.EventId);
     }

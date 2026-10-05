@@ -1,43 +1,93 @@
 ﻿using System.Data;
 using DDD.Domain.Common.ValueObjects;
 using DDD.Domain.Enums;
-using DDD.Domain.Entities;
 using DDD.Eventing.Contracts;
-using DDD.Application.Services.Dto;
+using DDD.Domain.Entities.Order;
 
-namespace DDD.Application.Services;
-
-public record GetOrdersQuery(int? StatusId);
-public record OrderResponse(int Id, string CustomerName, string Email, MoneyDto Price, string Status);
+namespace DDD.Application.Services.OrderService;
 
 public sealed class EmailAlreadyUsedException(Email email) :
     Exception($"Email '{email.Value}' уже используется.") {}
-
-public interface IOrderService
-{
-    Task<OrderResponse?> GetOrderByIdAsync(int id, CancellationToken cancellationToken);
-    Task<IEnumerable<OrderResponse>> GetAllOrdersAsync(GetOrdersQuery query, CancellationToken cancellationToken); 
-    Task<OrderResponse> CreateOrderAsync(CreateOrderDto dto, CancellationToken cancellationToken);
-    Task<OrderResponse?> UpdateOrderAsync(int id, UpdateOrderDto dto, CancellationToken cancellationToken);
-    Task<bool> DeleteOrderAsync(int id, CancellationToken cancellationToken);
-    Task Test(CancellationToken cancellationToken);
-}
 
 public class OrderService(IOrderRepository orders, IUnitOfWork unitOfWork) : IOrderService
 {
     public async Task Test(CancellationToken cancellationToken)
     {
-        int id = 2;
+        var dto = new CreateOrderDto(
+            productName: "Test Product",
+            customerName: "Test Customer",
+            email: $"test-{Guid.NewGuid():N}@example.com",
+            price: new MoneyDto(100m, "EUR"));
 
-        var order = await orders.GetByIdAsync(id, cancellationToken); 
-        if (order is null) 
-            ArgumentNullException.ThrowIfNull($"Заказ с Id '{id}' не найден.");
+        var order = await CreateOrderAsync(
+            dto,
+            cancellationToken);
 
-        order?.NewOrder();
-        order?.StartProcessing();
-        await unitOfWork.SaveChangesAsync(cancellationToken);
+        Console.WriteLine(
+            $"Order создан: Id={order.Id}, " +
+            $"Status='{order.Status}'");
 
-        await ShipAsync(id, cancellationToken);
+        await StartProcessingAsync(
+            order.Id,
+            "Test Address",
+            cancellationToken);
+
+        Console.WriteLine(
+            $"Запрос на обработку заказа {order.Id} отправлен.");
+
+        await WaitForOrderStatusAsync(
+            order.Id,
+            OrderStatus.Processing,
+            cancellationToken);
+
+        await orders.ReloadAsync(
+            order.Id,
+            cancellationToken);
+
+        Console.WriteLine(
+            $"Заказ {order.Id} находится в обработке.");
+
+        await CancelAsync(
+            order.Id,
+            cancellationToken);
+
+        Console.WriteLine(
+            $"Заказ {order.Id} отменен.");
+
+        try
+        {
+            await ShipAsync(
+                order.Id,
+                cancellationToken);
+
+            Console.WriteLine(
+                $"ОШИБКА ТЕСТА: отмененный заказ {order.Id} был доставлен.");
+
+            return;
+        }
+        catch (InvalidOperationException ex)
+        {
+            Console.WriteLine(
+                $"Корректно: попытка доставить отмененный " +
+                $"заказ {order.Id} отклонена: {ex.Message}");
+        }
+    }
+    private async Task WaitForOrderStatusAsync(int id, OrderStatus expectedStatus, CancellationToken cancellationToken)
+    {
+        const int maxAttempts = 50;
+
+        for (var attempt = 0; attempt < maxAttempts; attempt++)
+        {
+            var order = await orders.GetByIdReadOnlyAsync(id, cancellationToken);
+
+            if (order?.Status == expectedStatus)
+                return;
+
+            await Task.Delay(TimeSpan.FromMilliseconds(100), cancellationToken);
+        }
+
+        throw new TimeoutException(
+            $"Заказ {id} не перешел в статус '{expectedStatus}'.");
     }
 
     public async Task<OrderResponse?> GetOrderByIdAsync(int id, CancellationToken cancellationToken)
@@ -67,13 +117,16 @@ public class OrderService(IOrderRepository orders, IUnitOfWork unitOfWork) : IOr
     public async Task<OrderResponse> CreateOrderAsync(CreateOrderDto dto, CancellationToken cancellationToken)
     {
         var customerName = new CustomerName(dto.CustomerName);
+
         var email = await EnsureEmailIsUniqueAsync(dto.Email, cancellationToken: cancellationToken);
+
         var price = new Money(dto.Price.Amount, dto.Price.Currency);
 
-        var order = new Order(customerName, email, price);
+        var order = new Order(dto.ProductName, customerName, email, price);
 
         orders.Add(order);
-        await unitOfWork.SaveChangesAsync(cancellationToken); 
+
+        await unitOfWork.SaveChangesAsync(cancellationToken);
 
         return MapToResponseDto(order);
     }
@@ -98,8 +151,8 @@ public class OrderService(IOrderRepository orders, IUnitOfWork unitOfWork) : IOr
 
         return MapToResponseDto(order);
     }
-    public async Task<bool> StartProcessingAsync(int id, CancellationToken cancellationToken) =>
-         await ExecuteOrderActionAsync(id, order => order.StartProcessing(), cancellationToken);
+    public async Task<bool> StartProcessingAsync(int id, string address, CancellationToken cancellationToken) =>
+         await ExecuteOrderActionAsync(id, order => order.StartProcessing(address), cancellationToken);
 
     public async Task<bool> ShipAsync(int id, CancellationToken cancellationToken) =>
         await ExecuteOrderActionAsync(id, order => order.Ship(), cancellationToken);
@@ -114,10 +167,7 @@ public class OrderService(IOrderRepository orders, IUnitOfWork unitOfWork) : IOr
             orders.Remove(order);
         }, cancellationToken);
 
-    private async Task<bool> ExecuteOrderActionAsync(
-        int id,
-        Action<Order> action,
-        CancellationToken cancellationToken)
+    private async Task<bool> ExecuteOrderActionAsync(int id, Action<Order> action, CancellationToken cancellationToken)
     {
         var order = await orders.GetByIdAsync(id, cancellationToken);
         if (order is null) return false;
@@ -131,6 +181,7 @@ public class OrderService(IOrderRepository orders, IUnitOfWork unitOfWork) : IOr
     private static OrderResponse MapToResponseDto(Order order) =>
         new(
             order.Id, 
+            order.ProductName,
             order.CustomerName.Value, 
             order.Email.Value, 
             new MoneyDto(order.Price.Amount, order.Price.Currency), 

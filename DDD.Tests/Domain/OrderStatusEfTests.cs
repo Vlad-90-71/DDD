@@ -1,5 +1,5 @@
 ﻿using DDD.Domain.Common.ValueObjects;
-using DDD.Domain.Entities;
+using DDD.Domain.Entities.Order;
 using DDD.Domain.Enums;
 using DDD.Infrastructure;
 using DDD.Infrastructure.Outbox;
@@ -47,6 +47,7 @@ public class OrderStatusEfTests
     private static Order CreateOrder()
     {
         return new Order(
+            "Адрес ул 55",
             new CustomerName("Иван Иванов"),
             Email.Create("ivan@example.com"),
             new Money(100, "EUR"));

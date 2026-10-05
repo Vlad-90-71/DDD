@@ -2,36 +2,43 @@
 using DDD.Domain.Common.ValueObjects;
 using DDD.Domain.Enums;
 
-namespace DDD.Domain.Entities;
+namespace DDD.Domain.Entities.Order;
 
 public class Order : EntityEvent
 {
     public int Id { get; private set; }
+
+    public string ProductName { get; private set; } = null!;
+
     public CustomerName CustomerName { get; private set; } = null!;
     public Email Email { get; private set; } = null!;
     public Money Price { get; private set; } = null!;
     public OrderStatus Status { get; private set; } = OrderStatus.New;
 
-    public Order(CustomerName customerName, Email email, Money price)
+    public Order(string productName, CustomerName customerName, Email email, Money price)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(productName);
         ArgumentNullException.ThrowIfNull(customerName);
         ArgumentNullException.ThrowIfNull(email);
         ArgumentNullException.ThrowIfNull(price);
 
+        ProductName = productName;
         CustomerName = customerName;
         Email = email;
         Price = price;
+
+        AddDomainEvent(new OrderCreatedEvent(ProductName, CustomerName, Email, Price));
     }
 
-    private Order()
-    {
-    }
+    private Order() { }
+
     public void RenameCustomer(string customerName)
     {
         EnsureOrderCanBeModified();
 
         CustomerName = new CustomerName(customerName);
     }
+
     public void ChangeEmail(Email email)
     {
         ArgumentNullException.ThrowIfNull(email);
@@ -39,6 +46,7 @@ public class Order : EntityEvent
 
         Email = email;
     }
+
     public void ChangePrice(Money price)
     {
         ArgumentNullException.ThrowIfNull(price);
@@ -46,6 +54,7 @@ public class Order : EntityEvent
 
         Price = price;
     }
+
     public void ChangePriceAmount(decimal amount)
     {
         EnsureOrderCanBeModified();
@@ -53,15 +62,28 @@ public class Order : EntityEvent
         Price = new Money(amount, Price.Currency);
     }
 
-    public void NewOrder() => Status = OrderStatus.New;
-    public void StartProcessing()
+    public void SetOrderStatusNew()
+    {
+        Status = OrderStatus.New;
+    }
+
+    public void StartProcessing(string address)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(address);
+        EnsureStatus(OrderStatus.New);
+
+        AddDomainEvent(new OrderProcessingRequestedEvent(Id, ProductName, address));
+    }
+
+    public void Process()
     {
         EnsureStatus(OrderStatus.New);
 
         Status = OrderStatus.Processing;
 
-        AddDomainEvent(new OrderProcessingStartedEvent(Id));
+        AddDomainEvent(new OrderProcessingStartedEvent(Id, ProductName));
     }
+
     public void Ship()
     {
         EnsureStatus(OrderStatus.Processing);
@@ -70,6 +92,7 @@ public class Order : EntityEvent
 
         AddDomainEvent(new OrderShippedEvent(Id));
     }
+
     public void Cancel()
     {
         if (Status == OrderStatus.Shipped)
@@ -84,14 +107,18 @@ public class Order : EntityEvent
 
         AddDomainEvent(new OrderCanceledEvent(Id));
     }
+
     public void Delete()
     {
         if (Status == OrderStatus.Processing)
-            throw new InvalidOperationException("Нельзя удалить заказ, который уже находится в обработке.");
+            throw new InvalidOperationException(
+                "Нельзя удалить заказ, который уже находится в обработке.");
 
         if (Status == OrderStatus.Shipped)
-            throw new InvalidOperationException("Нельзя удалить доставленный заказ.");
+            throw new InvalidOperationException(
+                "Нельзя удалить доставленный заказ.");
     }
+
     private void EnsureOrderCanBeModified()
     {
         if (Status == OrderStatus.Shipped)

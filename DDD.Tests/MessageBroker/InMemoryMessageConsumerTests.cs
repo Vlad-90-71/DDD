@@ -1,5 +1,6 @@
 ﻿using DDD.Domain.Common.Events;
 using DDD.Domain.Entities;
+using DDD.Domain.Entities.Order;
 using DDD.Eventing.Contracts;
 using DDD.Infrastructure.Events;
 using DDD.MessageBroker.Contracts;

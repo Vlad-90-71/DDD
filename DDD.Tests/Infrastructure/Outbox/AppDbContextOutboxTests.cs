@@ -1,5 +1,5 @@
 ﻿using DDD.Domain.Common.ValueObjects;
-using DDD.Domain.Entities;
+using DDD.Domain.Entities.Order;
 using DDD.Infrastructure;
 using DDD.Infrastructure.Outbox;
 using Microsoft.Data.Sqlite;
@@ -51,13 +51,14 @@ public sealed class AppDbContextOutboxTests
         await context.Database.EnsureCreatedAsync();
 
         var order = new Order(
+            "Адрес ул 55",
             new CustomerName("Иван Иванов"),
             Email.Create("ivan@example.com"),
             new Money(100m, "EUR"));
 
         context.Orders.Add(order);
 
-        order.StartProcessing();
+        order.StartProcessing("Адрес ул 55");
 
         var domainEvent = Assert.Single(order.DomainEvents);
 
@@ -106,13 +107,14 @@ public sealed class AppDbContextOutboxTests
         await context.Database.EnsureCreatedAsync();
 
         var order = new Order(
+            "Адрес ул 55",
             new CustomerName("Иван Иванов"),
             Email.Create("ivan@example.com"),
             new Money(100m, "EUR"));
 
         context.Orders.Add(order);
 
-        order.StartProcessing();
+        order.StartProcessing("Адрес ул 55");
 
         Assert.Single(order.DomainEvents);
 
@@ -139,13 +141,14 @@ public sealed class AppDbContextOutboxTests
         await context.Database.EnsureCreatedAsync();
 
         var order = new Order(
+            "Адрес ул 55",
             new CustomerName("Иван Иванов"),
             Email.Create("ivan@example.com"),
             new Money(100m, "EUR"));
 
         context.Orders.Add(order);
 
-        order.StartProcessing();
+        order.StartProcessing("Адрес ул 55");
 
         // Act
         await context.SaveChangesAsync();
@@ -174,13 +177,14 @@ public sealed class AppDbContextOutboxTests
         await context.Database.EnsureCreatedAsync();
 
         var order = new Order(
+            "Адрес ул 55",
             new CustomerName("Иван Иванов"),
             Email.Create("ivan@example.com"),
             new Money(100m, "EUR"));
 
         context.Orders.Add(order);
 
-        order.StartProcessing();
+        order.StartProcessing("Адрес ул 55");
         order.Ship();
 
         Assert.Equal(2, order.DomainEvents.Count);
@@ -219,6 +223,7 @@ public sealed class AppDbContextOutboxTests
         await context.Database.EnsureCreatedAsync();
 
         var order = new Order(
+            "Адрес ул 55",
             new CustomerName("Иван Иванов"),
             Email.Create("ivan@example.com"),
             new Money(100m, "EUR"));
@@ -247,6 +252,7 @@ public sealed class AppDbContextOutboxTests
         await context.Database.EnsureCreatedAsync();
 
         var order = new Order(
+            "Адрес ул 55",
             new CustomerName("Иван Иванов"),
             Email.Create("ivan@example.com"),
             new Money(100m, "EUR"));

@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using DDD.Domain.Entities;
 using DDD.Infrastructure.Converters;
+using DDD.Domain.Entities.Order;
 
 namespace DDD.Infrastructure.Configurations;
 
@@ -10,6 +10,10 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
     public void Configure(EntityTypeBuilder<Order> builder)
     {
         builder.HasKey(x => x.Id);
+
+        builder.Property(x => x.ProductName)
+            .HasMaxLength(500)
+            .IsRequired();
 
         builder.ComplexProperty(x => x.CustomerName, builder =>
         {

@@ -1,8 +1,7 @@
-﻿using DDD.Application.Common;
-using DDD.Application.Services;
-using DDD.Application.Services.Dto;
+﻿using Microsoft.AspNetCore.Mvc;
+using DDD.Application.Common;
 using DDD.Infrastructure.Outbox;
-using Microsoft.AspNetCore.Mvc;
+using DDD.Application.Services.OrderService;
 
 namespace DDD.Controllers;
 

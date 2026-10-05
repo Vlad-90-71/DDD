@@ -1,9 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using DDD.Domain.Entities;
 using DDD.Domain.Common.Events;
 using DDD.Infrastructure.Outbox;
 using DDD.Infrastructure.Configurations;
 using DDD.Infrastructure.Events;
+using DDD.Domain.Entities.Order;
 
 namespace DDD.Infrastructure;
 
@@ -20,33 +20,33 @@ public class AppDbContext(
     {
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+        modelBuilder.ApplyConfigurationsFromAssembly(
+            typeof(AppDbContext).Assembly);
 
-        modelBuilder.SmartEnumConfiguration(); 
+        modelBuilder.SmartEnumConfiguration();
     }
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        var entities = ChangeTracker
-            .Entries()
-            .Select(x => x.Entity)
-            .OfType<IEntityEvent>()
-            .ToArray(); 
+        var entries = ChangeTracker.Entries<IEntityEvent>().ToArray();
 
-        if (entities.Length > 0)
+        if (entries.Length > 0)
         {
-            var outboxMessages = entities
-                .SelectMany(x => x.DomainEvents)
-                .Select(domainEvent => outboxMessageSerializer.Serialize(domainEvent));
+            var domainEvents = entries.SelectMany(x => x.Entity.DomainEvents).ToArray();
 
-            OutboxMessages.AddRange(outboxMessages);
+            if (domainEvents.Length > 0)
+            {
+                OutboxMessages.AddRange(domainEvents.Select(ev => outboxMessageSerializer.Serialize(ev)));
+
+                EventLogs.AddRange(domainEvents.Select(ev => new EventLog(ev)));
+            }
         }
 
         var result = await base.SaveChangesAsync(cancellationToken);
-        
-        foreach (var entity in entities)
+
+        foreach (var entry in entries)
         {
-            entity.ClearDomainEvents();
+            entry.Entity.ClearDomainEvents();
         }
 
         return result;

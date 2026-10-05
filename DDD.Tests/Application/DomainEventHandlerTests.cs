@@ -1,12 +1,14 @@
 ﻿using DDD.Application.Common.Events;
 using DDD.Domain.Common.Events;
-using DDD.Domain.Entities;
+using DDD.Domain.Entities.Order;
 using DDD.Eventing.Contracts;
 using DDD.Infrastructure;
 using DDD.Infrastructure.Events;
 using DDD.Infrastructure.Outbox;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Microsoft.VisualStudio.TestPlatform.CommunicationUtilities;
 
 namespace DDD.Tests.Application;
 
@@ -204,7 +206,7 @@ public sealed class DomainEventHandlerTests
         public string Message =>
             $"Order {OrderId}";
     }
-
+    
     private sealed class TestEventProcessingStore
         : IEventProcessingStore
     {
@@ -232,14 +234,11 @@ public sealed class DomainEventHandlerTests
             return Task.FromResult(IsProcessed);
         }
 
-        public void Log(
-            Guid eventId,
-            string eventType,
-            string message)
+        public void LogProcessed(IDomainEvent domainEvent)
         {
-            LoggedEventId = eventId;
-            LoggedEventType = eventType;
-            LoggedMessage = message;
+            LoggedEventId = domainEvent.EventId;
+            LoggedEventType = domainEvent.GetType().Name;
+            LoggedMessage = domainEvent.Message;
         }
 
         public void MarkAsProcessed(

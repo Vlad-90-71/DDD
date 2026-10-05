@@ -1,17 +1,25 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using DDD.Domain.Enums;
-using DDD.Domain.Entities;
 using DDD.Domain.Common.ValueObjects;
-using DDD.Application.Services;
+using DDD.Domain.Entities.Order;
+using DDD.Application.Services.OrderService;
 
 namespace DDD.Infrastructure.Repositories;
 
-public sealed class OrderRepository(
-    AppDbContext context) : IOrderRepository
+public sealed class OrderRepository(AppDbContext context) : IOrderRepository
 {
-    public Task<Order?> GetByIdAsync(int id, CancellationToken cancellationToken) =>
-        context.Orders.FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+    public async Task ReloadAsync(int id, CancellationToken cancellationToken)
+    {
+        var order = context.Orders.Local.FirstOrDefault(x => x.Id == id);
 
+        if (order is not null)
+            await context.Entry(order).ReloadAsync(cancellationToken);
+    }
+
+    public ValueTask<Order?> GetByIdAsync(int id, CancellationToken cancellationToken) =>
+        context.Orders.FindAsync([id], cancellationToken);
+    public Task<Order?> GetByIdReadOnlyAsync(int id, CancellationToken cancellationToken) =>
+        context.Orders.AsNoTracking().FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
     public async Task<IReadOnlyList<Order>> GetAllAsync(
         OrderStatus? status, CancellationToken cancellationToken)
     {

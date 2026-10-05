@@ -1,6 +1,6 @@
 ﻿using DDD.Application.Common.Events;
 using DDD.Domain.Common.ValueObjects;
-using DDD.Domain.Entities;
+using DDD.Domain.Entities.Order;
 using DDD.Eventing.Contracts;
 using DDD.Infrastructure;
 using DDD.Infrastructure.Events;
@@ -30,6 +30,7 @@ public sealed class EventFlowTests
             new InMemoryMessagePublisher(broker);
 
         var order = new Order(
+            "Адрес ул 55",
             new CustomerName("Иван Иванов"),
             Email.Create("ivan@example.com"),
             new Money(100m, "EUR"));
@@ -218,6 +219,7 @@ public sealed class EventFlowTests
 
         var order =
             new Order(
+                "Адрес ул 55",
                 new CustomerName("Иван Иванов"),
                 Email.Create("ivan@example.com"),
                 new Money(100m, "EUR"));

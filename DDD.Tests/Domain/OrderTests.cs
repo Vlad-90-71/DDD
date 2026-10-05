@@ -1,5 +1,5 @@
 ﻿using DDD.Domain.Common.ValueObjects;
-using DDD.Domain.Entities;
+using DDD.Domain.Entities.Order;
 using DDD.Domain.Enums;
 
 namespace DDD.Tests.Domain;
@@ -11,6 +11,7 @@ public class OrderTests
         string currency = "EUR")
     {
         return new Order(
+            "Адрес ул 55",
             new CustomerName("Иван Иванов"),
             Email.Create("ivan@example.com"),
             new Money(amount, currency));
@@ -26,6 +27,7 @@ public class OrderTests
 
         // Act
         var order = new Order(
+            "Адрес ул 55",
             customerName,
             email,
             price);
@@ -47,6 +49,7 @@ public class OrderTests
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() =>
             new Order(
+                "",
                 null!,
                 email,
                 price));
@@ -62,6 +65,7 @@ public class OrderTests
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() =>
             new Order(
+                "Адрес ул 55",
                 customerName,
                 null!,
                 price));
@@ -77,6 +81,7 @@ public class OrderTests
         // Act & Assert
         Assert.Throws<ArgumentNullException>(() =>
             new Order(
+                "Адрес ул 55",
                 customerName,
                 email,
                 null!));
@@ -107,7 +112,7 @@ public class OrderTests
         // Arrange
         var order = CreateOrder();
 
-        order.StartProcessing();
+        order.StartProcessing("Адрес ул 55");
         order.Ship();
 
         // Act & Assert
@@ -171,7 +176,7 @@ public class OrderTests
         // Arrange
         var order = CreateOrder();
 
-        order.StartProcessing();
+        order.StartProcessing("Адрес ул 55");
         order.Ship();
 
         // Act & Assert
@@ -235,7 +240,7 @@ public class OrderTests
         // Arrange
         var order = CreateOrder();
 
-        order.StartProcessing();
+        order.StartProcessing("Адрес ул 55");
         order.Ship();
 
         // Act & Assert
@@ -281,7 +286,7 @@ public class OrderTests
         // Arrange
         var order = CreateOrder();
 
-        order.StartProcessing();
+        order.StartProcessing("Адрес ул 55");
         order.Ship();
 
         // Act & Assert
@@ -313,7 +318,7 @@ public class OrderTests
         var order = CreateOrder();
 
         // Act
-        order.StartProcessing();
+        order.StartProcessing("Адрес ул 55");
 
         // Assert
         Assert.Equal(
@@ -327,11 +332,11 @@ public class OrderTests
         // Arrange
         var order = CreateOrder();
 
-        order.StartProcessing();
+        order.StartProcessing("Адрес ул 55");
 
         // Act & Assert
         Assert.Throws<InvalidOperationException>(() =>
-            order.StartProcessing());
+            order.StartProcessing("Адрес ул 55"));
     }
 
     [Fact]
@@ -340,12 +345,12 @@ public class OrderTests
         // Arrange
         var order = CreateOrder();
 
-        order.StartProcessing();
+        order.StartProcessing("Адрес ул 55");
         order.Ship();
 
         // Act & Assert
         Assert.Throws<InvalidOperationException>(() =>
-            order.StartProcessing());
+            order.StartProcessing("Адрес ул 55"));
     }
 
     [Fact]
@@ -358,7 +363,7 @@ public class OrderTests
 
         // Act & Assert
         Assert.Throws<InvalidOperationException>(() =>
-            order.StartProcessing());
+            order.StartProcessing("Адрес ул 55"));
     }
 
     // -------------------------------------------------------
@@ -371,7 +376,7 @@ public class OrderTests
         // Arrange
         var order = CreateOrder();
 
-        order.StartProcessing();
+        order.StartProcessing("Адрес ул 55");
 
         // Act
         order.Ship();
@@ -399,7 +404,7 @@ public class OrderTests
         // Arrange
         var order = CreateOrder();
 
-        order.StartProcessing();
+        order.StartProcessing("Адрес ул 55");
         order.Ship();
 
         // Act & Assert
@@ -445,7 +450,7 @@ public class OrderTests
         // Arrange
         var order = CreateOrder();
 
-        order.StartProcessing();
+        order.StartProcessing("Адрес ул 55");
 
         // Act
         order.Cancel();
@@ -462,7 +467,7 @@ public class OrderTests
         // Arrange
         var order = CreateOrder();
 
-        order.StartProcessing();
+        order.StartProcessing("Адрес ул 55");
         order.Ship();
 
         // Act & Assert
@@ -523,7 +528,7 @@ public class OrderTests
         // Arrange
         var order = CreateOrder();
 
-        order.StartProcessing();
+        order.StartProcessing("Адрес ул 55");
 
         // Act & Assert
         var exception = Assert.Throws<InvalidOperationException>(() =>
@@ -540,7 +545,7 @@ public class OrderTests
         // Arrange
         var order = CreateOrder();
 
-        order.StartProcessing();
+        order.StartProcessing("Адрес ул 55");
         order.Ship();
 
         // Act & Assert

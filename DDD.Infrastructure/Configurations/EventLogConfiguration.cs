@@ -7,8 +7,7 @@ namespace DDD.Infrastructure.Configurations;
 public sealed class EventLogConfiguration
     : IEntityTypeConfiguration<EventLog>
 {
-    public void Configure(
-        EntityTypeBuilder<EventLog> builder)
+    public void Configure(EntityTypeBuilder<EventLog> builder)
     {
         builder.ToTable("EventLogs");
 

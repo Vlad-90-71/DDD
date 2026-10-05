@@ -1,4 +1,4 @@
-﻿using DDD.Domain.Entities;
+﻿using DDD.Domain.Entities.Order;
 
 namespace DDD.Tests.Domain;
 
@@ -7,6 +7,7 @@ public sealed class OrderDomainEventTests
     private static Order CreateOrder()
     {
         return new Order(
+            "Телевизор",
             new DDD.Domain.Common.ValueObjects.CustomerName("Иван Иванов"),
             DDD.Domain.Common.ValueObjects.Email.Create("ivan@example.com"),
             new DDD.Domain.Common.ValueObjects.Money(100m, "EUR"));
@@ -19,7 +20,7 @@ public sealed class OrderDomainEventTests
         var order = CreateOrder();
 
         // Act
-        order.StartProcessing();
+        order.StartProcessing("Адрес дом");
 
         // Assert
         var domainEvent = Assert.Single(order.DomainEvents);
@@ -38,7 +39,7 @@ public sealed class OrderDomainEventTests
         var order = CreateOrder();
 
         // Act
-        order.StartProcessing();
+        order.StartProcessing("Адрес ул 55");
 
         // Assert
         var domainEvent = Assert.Single(order.DomainEvents);
@@ -53,7 +54,7 @@ public sealed class OrderDomainEventTests
     {
         // Arrange
         var order = CreateOrder();
-        order.StartProcessing();
+        order.StartProcessing("Адрес ул 55");
 
         // Act
         order.Ship();
@@ -74,7 +75,7 @@ public sealed class OrderDomainEventTests
     {
         // Arrange
         var order = CreateOrder();
-        order.StartProcessing();
+        order.StartProcessing("Адрес ул 55");
 
         // Act
         order.Ship();
@@ -133,7 +134,7 @@ public sealed class OrderDomainEventTests
         var order = CreateOrder();
 
         // Act
-        order.StartProcessing();
+        order.StartProcessing("Адрес ул 55");
         var after = DateTime.UtcNow;
 
         // Assert
@@ -152,7 +153,7 @@ public sealed class OrderDomainEventTests
         var order = CreateOrder();
 
         // Act
-        order.StartProcessing();
+        order.StartProcessing("Адрес ул 55");
         order.Ship();
 
         // Assert
@@ -170,13 +171,13 @@ public sealed class OrderDomainEventTests
         // Arrange
         var order = CreateOrder();
 
-        order.StartProcessing();
+        order.StartProcessing("Адрес ул 55");
 
         var eventCountBefore = order.DomainEvents.Count;
 
         // Act
         Assert.Throws<InvalidOperationException>(() =>
-            order.StartProcessing());
+            order.StartProcessing("Адрес ул 55"));
 
         // Assert
         Assert.Equal(
@@ -204,7 +205,7 @@ public sealed class OrderDomainEventTests
         // Arrange
         var order = CreateOrder();
 
-        order.StartProcessing();
+        order.StartProcessing("Адрес ул 55");
         order.Ship();
 
         // Act
@@ -225,7 +226,7 @@ public sealed class OrderDomainEventTests
         // Arrange
         var order = CreateOrder();
 
-        order.StartProcessing();
+        order.StartProcessing("Адрес ул 55");
         order.Ship();
 
         Assert.Equal(2, order.DomainEvents.Count);

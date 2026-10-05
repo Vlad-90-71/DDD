@@ -1,5 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using DDD.Domain.Common.Events;
 using DDD.Eventing.Contracts;
+using Microsoft.EntityFrameworkCore;
 
 namespace DDD.Infrastructure.Events;
 
@@ -8,11 +9,17 @@ public sealed class EventProcessingStore(AppDbContext context) : IEventProcessin
     public Task<bool> IsProcessedAsync(Guid eventId, CancellationToken cancellationToken) =>
         context.ProcessedEvents.AnyAsync(x => x.EventId == eventId, cancellationToken);
 
-    public void Log(Guid eventId, string eventType, string message)
+    public void LogProcessed(IDomainEvent domainEvent)
     {
-        context.EventLogs.Add(new EventLog(eventId, eventType, message, DateTime.UtcNow));
+        context.EventLogs.Add(new EventLog(
+            domainEvent.EventId,
+            domainEvent.GetType().Name,
+            $"Consumer обработал событие '{domainEvent.GetType().Name}'.",
+            DateTime.UtcNow));
     }
 
-    public void MarkAsProcessed(Guid eventId) =>
+    public void MarkAsProcessed(Guid eventId)
+    {
         context.ProcessedEvents.Add(new ProcessedEvent(eventId, DateTime.UtcNow));
+    }
 }

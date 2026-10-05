@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Diagnostics;
 using FluentValidation;
-using DDD.Application.Services;
+using DDD.Application.Services.OrderService;
 
 namespace DDD.Exceptions;
 

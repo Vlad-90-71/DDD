@@ -3,10 +3,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using DDD.Eventing.Contracts;
 using DDD.Application.Common;
-using DDD.Application.Services;
 using DDD.Infrastructure.Events;
 using DDD.Infrastructure.Outbox;
 using DDD.Infrastructure.Repositories;
+using DDD.Application.Services.OrderService;
 
 namespace DDD.Infrastructure.Extensions;
 
@@ -23,6 +23,7 @@ public static partial class DependencyInjection
         services.AddScoped<IUnitOfWork, EfUnitOfWork>();
 
         // Domain Events
+        services.AddSingleton<IDomainEventSerializer, DomainEventSerializer>();
         services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
         services.AddScoped<IEventProcessingStore, EventProcessingStore>();
 

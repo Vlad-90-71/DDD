@@ -1,7 +1,6 @@
 ﻿using FluentValidation;
-using DDD.Application.Services.Dto;
 
-namespace DDD.Application.Services.Validators;
+namespace DDD.Application.Services.OrderService.Validators;
 
 public class UpdateOrderValidator : AbstractValidator<UpdateOrderDto>
 {

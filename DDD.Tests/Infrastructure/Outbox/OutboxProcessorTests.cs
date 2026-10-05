@@ -3,7 +3,6 @@ using DDD.Infrastructure.Outbox;
 using DDD.MessageBroker.Contracts;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
-using DDD.MessageBroker.Contracts;
 
 namespace DDD.Tests.Infrastructure.Outbox;
 
