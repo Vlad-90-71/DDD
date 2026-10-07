@@ -1,6 +1,6 @@
 ﻿namespace DDD.Infrastructure.Events;
 
-public sealed class ProcessedEvent
+public sealed class ProcessedEvent 
 {
     public Guid EventId { get; private set; }
 
@@ -40,15 +40,11 @@ public sealed class ProcessedEvent
         ClaimToken is not null &&
         ClaimedUntilUtc > now;
 
-    public void MarkAsProcessed(
-        Guid claimToken,
-        DateTime processedOnUtc)
+    public void MarkAsProcessed(Guid claimToken, DateTime processedOnUtc)
     {
         if (ClaimToken != claimToken)
-        {
             throw new InvalidOperationException(
                 "Событие захвачено другим consumer.");
-        }
 
         ProcessedOnUtc = processedOnUtc;
         ClaimToken = null;

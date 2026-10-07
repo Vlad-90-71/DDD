@@ -8,7 +8,7 @@ public interface IEntityEvent
     void ClearDomainEvents();
 }
 
-public abstract class EntityEvent : IEntityEvent
+public abstract class EntityEvent<TKey> : Entity<TKey>, IEntityEvent where TKey : struct
 {
     private readonly List<IDomainEvent> _domainEvents = [];
     private readonly ReadOnlyCollection<IDomainEvent> _domainEventsReadOnly;

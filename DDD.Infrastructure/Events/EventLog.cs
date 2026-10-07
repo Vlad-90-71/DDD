@@ -1,10 +1,10 @@
-﻿using DDD.Domain.Common.Events;
+﻿using DDD.Domain.Common;
+using DDD.Domain.Common.Events;
 
 namespace DDD.Infrastructure.Events;
 
-public sealed class EventLog
+public sealed class EventLog : Entity<long>
 {
-    public long Id { get; private set; }
     public Guid EventId { get; private set; }
     public string EventType { get; private set; } = null!;
     public string Message { get; private set; } = null!;

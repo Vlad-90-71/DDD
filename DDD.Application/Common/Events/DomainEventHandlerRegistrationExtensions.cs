@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using DDD.Domain.Common.Events;
-using DDD.Eventing.Contracts;
 
 namespace DDD.Application.Common.Events;
 

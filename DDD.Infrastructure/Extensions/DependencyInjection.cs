@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using DDD.Domain.Common;
 using DDD.Eventing.Contracts;
-using DDD.Application.Common;
 using DDD.Infrastructure.Events;
 using DDD.Infrastructure.Outbox;
 using DDD.Infrastructure.Repositories;
@@ -19,7 +19,10 @@ public static partial class DependencyInjection
             options.UseSqlite(configuration.GetConnectionString("DefaultConnection"),
                 b => b.MigrationsAssembly(typeof(AppDbContext).Assembly.FullName)));
 
+        services.AddScoped(typeof(IRepository<,>), typeof(Repository<,>));
+
         services.AddScoped<IOrderRepository, OrderRepository>();
+
         services.AddScoped<IUnitOfWork, EfUnitOfWork>();
 
         // Domain Events

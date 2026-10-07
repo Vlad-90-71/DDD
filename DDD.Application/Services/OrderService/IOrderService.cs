@@ -1,4 +1,6 @@
-﻿namespace DDD.Application.Services.OrderService;
+﻿using DDD.Domain.Entities.Order;
+
+namespace DDD.Application.Services.OrderService;
 
 public interface IOrderService
 {
@@ -7,6 +9,7 @@ public interface IOrderService
     Task<OrderResponse> CreateOrderAsync(CreateOrderDto dto, CancellationToken cancellationToken);
     Task<OrderResponse?> UpdateOrderAsync(int id, UpdateOrderDto dto, CancellationToken cancellationToken);
     Task<bool> StartProcessingAsync(int id, string address, CancellationToken cancellationToken);
+    Task HandleOrderShippedAsync(OrderShippedEvent domainEvent, CancellationToken cancellationToken);
     Task<bool> ShipAsync(int id, CancellationToken cancellationToken);
     Task<bool> CancelAsync(int id, CancellationToken cancellationToken);
     Task<bool> DeleteOrderAsync(int id, CancellationToken cancellationToken);

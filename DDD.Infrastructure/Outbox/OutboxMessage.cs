@@ -1,8 +1,9 @@
-﻿namespace DDD.Infrastructure.Outbox;
+﻿using DDD.Domain.Common;
 
-public class OutboxMessage
+namespace DDD.Infrastructure.Outbox;
+
+public class OutboxMessage : Entity<long>
 {
-    public long Id { get; private set; }
     public Guid EventId { get; private set; }
     public string Type { get; private set; } = null!;
     public string Content { get; private set; } = null!;

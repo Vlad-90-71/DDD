@@ -1,15 +1,16 @@
-﻿using System.Data;
+﻿using DDD.Application.Common;
 using DDD.Domain.Common.ValueObjects;
+using DDD.Domain.Entities.Order;
 using DDD.Domain.Enums;
 using DDD.Eventing.Contracts;
-using DDD.Domain.Entities.Order;
+using System.Data;
 
 namespace DDD.Application.Services.OrderService;
 
 public sealed class EmailAlreadyUsedException(Email email) :
     Exception($"Email '{email.Value}' уже используется.") {}
 
-public class OrderService(IOrderRepository orders, IUnitOfWork unitOfWork) : IOrderService
+public class OrderService(IOrderRepository orders, IUnitOfWork unitOfWork, IFailureSimulator failureSimulator) : IOrderService
 {
     public async Task Test(CancellationToken cancellationToken)
     {
@@ -46,27 +47,53 @@ public class OrderService(IOrderRepository orders, IUnitOfWork unitOfWork) : IOr
 
         Console.WriteLine(
             $"Заказ {order.Id} находится в обработке.");
+
+        await ShipAsync(
+            order.Id,
+            cancellationToken);
+
+        await WaitForOrderStatusAsync(
+            order.Id,
+            OrderStatus.Shipped,
+            cancellationToken);
+
+        await orders.ReloadAsync(
+            order.Id,
+            cancellationToken);
+
+        Console.WriteLine(
+            $"Заказ {order.Id} доставлен.");
+
+        await Task.Delay(
+            TimeSpan.FromSeconds(2),
+            cancellationToken);
     }
 
-
-    private async Task WaitForOrderStatusAsync(int id, OrderStatus expectedStatus, CancellationToken cancellationToken)
+    private async Task WaitForOrderStatusAsync(
+        int id,
+        OrderStatus expectedStatus,
+        CancellationToken cancellationToken)
     {
         const int maxAttempts = 50;
 
         for (var attempt = 0; attempt < maxAttempts; attempt++)
         {
-            var order = await orders.GetByIdReadOnlyAsync(id, cancellationToken);
+            var order = await orders.GetByIdReadOnlyAsync(
+                id,
+                cancellationToken);
 
             if (order?.Status == expectedStatus)
                 return;
 
-            await Task.Delay(TimeSpan.FromMilliseconds(100), cancellationToken);
+            await Task.Delay(
+                TimeSpan.FromMilliseconds(100),
+                cancellationToken);
         }
 
         throw new TimeoutException(
             $"Заказ {id} не перешел в статус '{expectedStatus}'.");
     }
-
+    
     public async Task<OrderResponse?> GetOrderByIdAsync(int id, CancellationToken cancellationToken)
     {
         var order = await orders.GetByIdAsync(id, cancellationToken);
@@ -107,6 +134,7 @@ public class OrderService(IOrderRepository orders, IUnitOfWork unitOfWork) : IOr
 
         return MapToResponseDto(order);
     }
+
     public async Task<OrderResponse?> UpdateOrderAsync(int id, UpdateOrderDto dto, CancellationToken cancellationToken)
     {
         var order = await orders.GetByIdAsync(id, cancellationToken);
@@ -130,6 +158,13 @@ public class OrderService(IOrderRepository orders, IUnitOfWork unitOfWork) : IOr
     }
     public async Task<bool> StartProcessingAsync(int id, string address, CancellationToken cancellationToken) =>
          await ExecuteOrderActionAsync(id, order => order.StartProcessing(address), cancellationToken);
+
+    public Task HandleOrderShippedAsync(OrderShippedEvent domainEvent, CancellationToken cancellationToken)
+    {
+        Console.WriteLine($"Обработка события доставки заказа {domainEvent.OrderId}");
+
+        return Task.CompletedTask;
+    }
 
     public async Task<bool> ShipAsync(int id, CancellationToken cancellationToken) =>
         await ExecuteOrderActionAsync(id, order => order.Ship(), cancellationToken);

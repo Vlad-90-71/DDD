@@ -4,12 +4,9 @@ using DDD.Domain.Enums;
 
 namespace DDD.Domain.Entities.Order;
 
-public class Order : EntityEvent
+public class Order : EntityEvent<int>
 {
-    public int Id { get; private set; }
-
     public string ProductName { get; private set; } = null!;
-
     public CustomerName CustomerName { get; private set; } = null!;
     public Email Email { get; private set; } = null!;
     public Money Price { get; private set; } = null!;

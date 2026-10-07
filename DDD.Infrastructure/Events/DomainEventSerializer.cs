@@ -1,13 +1,24 @@
 ﻿using System.Text.Json;
 using DDD.Domain.Common.Events;
 using DDD.Eventing.Contracts;
+using DDD.Infrastructure.Converters;
 
 namespace DDD.Infrastructure.Events;
 
 public sealed class DomainEventSerializer : IDomainEventSerializer
 {
-    private static readonly JsonSerializerOptions JsonOptions =
-        JsonSerializerOptions.Web;
+    private static readonly JsonSerializerOptions JsonOptions = CreateJsonOptions();
+
+    private static JsonSerializerOptions CreateJsonOptions()
+    {
+        var options = new JsonSerializerOptions(JsonSerializerDefaults.Web);
+
+        options.Converters.Add(new EmailJsonConverter());
+        options.Converters.Add(new CustomerNameJsonConverter());
+        options.Converters.Add(new MoneyJsonConverter());
+
+        return options;
+    }
 
     public string Serialize(IDomainEvent domainEvent)
     {

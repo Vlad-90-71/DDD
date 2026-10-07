@@ -4,7 +4,7 @@ namespace DDD.Eventing.Contracts;
 
 public enum EventProcessingClaimStatus
 {
-    Claimed, AlreadyProcessed, InProgress, Failed, NoHandler
+    Claimed, AlreadyProcessed, InProgress, Retry, Failed, NoHandler
 }
 public sealed record EventProcessingClaimResult(EventProcessingClaimStatus Status, Guid EventId, Guid? ClaimToken);
 
