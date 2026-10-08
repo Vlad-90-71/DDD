@@ -20,12 +20,10 @@ public sealed class SmartEnumJsonConverterFactory : JsonConverterFactory
         var type = Nullable.GetUnderlyingType(typeToConvert) ?? typeToConvert;
 
         // Используем фабрику внутри GetOrAdd для потокобезопасного кэширования
-        return ConverterCache.GetOrAdd(typeToConvert, t =>
+        return ConverterCache.GetOrAdd(type, t =>
         {
             if (!IsSmartEnum(type))
-            {
                 throw new InvalidOperationException($"Тип '{t}' не является SmartEnum<T>.");
-            }
 
             var converterType = typeof(SmartEnumJsonConverter<>).MakeGenericType(type);
             return (JsonConverter)Activator.CreateInstance(converterType)!;
@@ -40,9 +38,7 @@ public sealed class SmartEnumJsonConverterFactory : JsonConverterFactory
             current = current.BaseType)
         {
             if (current.IsGenericType && current.GetGenericTypeDefinition() == typeof(SmartEnum<>))
-            {
                 return true;
-            }
         }
 
         return false;

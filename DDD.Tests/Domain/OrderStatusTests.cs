@@ -1,4 +1,4 @@
-﻿using DDD.Domain.Enums;
+﻿using DDD.Domain.Entities.Order;
 
 namespace DDD.Tests.Domain;
 

@@ -9,7 +9,11 @@ public class OutboxBackgroundService(
     ILogger<OutboxBackgroundService> logger)
     : BackgroundService
 {
-    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+    private static readonly TimeSpan PollingInterval =
+        TimeSpan.FromSeconds(5);
+
+    protected override async Task ExecuteAsync(
+        CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
         {
@@ -18,15 +22,27 @@ public class OutboxBackgroundService(
                 using var scope = scopeFactory.CreateScope();
 
                 var processor = scope.ServiceProvider.GetRequiredService<OutboxProcessor>();
-
                 await processor.ProcessAsync(stoppingToken);
+            }
+            catch (OperationCanceledException)
+                when (stoppingToken.IsCancellationRequested)
+            {
+                break;
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Ошибка обработки Outbox.");
+                logger.LogError(ex, "Outbox processing cycle failed.");
             }
 
-            await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
+            try
+            {
+                await Task.Delay(PollingInterval, stoppingToken);
+            }
+            catch (OperationCanceledException)
+                when (stoppingToken.IsCancellationRequested)
+            {
+                break;
+            }
         }
     }
 }

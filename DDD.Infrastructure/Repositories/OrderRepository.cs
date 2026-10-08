@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using DDD.Domain.Enums;
 using DDD.Domain.Common.ValueObjects;
 using DDD.Domain.Entities.Order;
 using DDD.Application.Services.OrderService;

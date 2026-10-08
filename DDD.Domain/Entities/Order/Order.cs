@@ -1,6 +1,5 @@
 ﻿using DDD.Domain.Common.Events;
 using DDD.Domain.Common.ValueObjects;
-using DDD.Domain.Enums;
 
 namespace DDD.Domain.Entities.Order;
 

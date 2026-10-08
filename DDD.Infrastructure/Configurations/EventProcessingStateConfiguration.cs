@@ -4,11 +4,11 @@ using DDD.Infrastructure.Events;
 
 namespace DDD.Infrastructure.Configurations;
 
-public sealed class ProcessedEventConfiguration : IEntityTypeConfiguration<ProcessedEvent>
+public sealed class EventProcessingStateConfiguration : IEntityTypeConfiguration<EventProcessingState>
 {
-    public void Configure(EntityTypeBuilder<ProcessedEvent> builder)
+    public void Configure(EntityTypeBuilder<EventProcessingState> builder)
     {
-        builder.ToTable("ProcessedEvents");
+        builder.ToTable("EventProcessingStates");
 
         builder.HasKey(x => x.EventId);
 

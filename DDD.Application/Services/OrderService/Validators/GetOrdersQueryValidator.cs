@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
-using DDD.Domain.Enums;
 using DDD.Application.Common;
+using DDD.Domain.Entities.Order;
 
 namespace DDD.Application.Services.OrderService.Validators;
 

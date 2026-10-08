@@ -7,7 +7,8 @@ namespace DDD.Infrastructure.Configurations;
 
 public static class SmartEnumModelConfigurationBuilder
 {
-    public static void SmartEnumConfiguration(this ModelBuilder modelBuilder)
+    public static void SmartEnumConfiguration(
+        this ModelBuilder modelBuilder)
     {
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())
         {
@@ -15,10 +16,17 @@ public static class SmartEnumModelConfigurationBuilder
             {
                 var propertyType = property.ClrType;
 
-                if (!SmartEnum.IsSmartEnum(propertyType))
+                var underlyingType = Nullable.GetUnderlyingType(propertyType);
+
+                var smartEnumType = underlyingType ?? propertyType;
+
+                if (!SmartEnum.IsSmartEnum(smartEnumType))
                     continue;
 
-                var converterType = typeof(SmartEnumConverter<>).MakeGenericType(propertyType);
+                var converterType = underlyingType is not null
+                    ? typeof(NullableSmartEnumConverter<>).MakeGenericType(smartEnumType)
+                    : typeof(SmartEnumConverter<>).MakeGenericType(smartEnumType);
+
                 var converter = (ValueConverter)Activator.CreateInstance(converterType)!;
 
                 property.SetValueConverter(converter);
@@ -27,4 +35,3 @@ public static class SmartEnumModelConfigurationBuilder
         }
     }
 }
-

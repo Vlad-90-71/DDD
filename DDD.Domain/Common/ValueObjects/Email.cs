@@ -14,9 +14,7 @@ public sealed class Email : IEquatable<Email>
     public static Email Create(string value)
     {
         if (string.IsNullOrWhiteSpace(value))
-            throw new ArgumentException(
-                "Email не может быть пустым.",
-                nameof(value));
+            throw new ArgumentException("Email не может быть пустым.", nameof(value));
 
         value = value.Trim();
 
@@ -29,9 +27,7 @@ public sealed class Email : IEquatable<Email>
         }
         catch
         {
-            throw new ArgumentException(
-                $"Некорректный email: '{value}'.",
-                nameof(value));
+            throw new ArgumentException($"Некорректный email: '{value}'.", nameof(value));
         }
 
         return new Email(value);
@@ -40,8 +36,7 @@ public sealed class Email : IEquatable<Email>
     public override string ToString() => Value;
 
     public bool Equals(Email? other) =>
-        other is not null &&
-        string.Equals(Value, other.Value, StringComparison.OrdinalIgnoreCase);
+        other is not null && string.Equals(Value, other.Value, StringComparison.OrdinalIgnoreCase);
 
     public override bool Equals(object? obj) =>
         obj is Email other && Equals(other);

@@ -1,6 +1,8 @@
-﻿using DDD.Domain.Common.SmartEnum.Json;
-using DDD.OpenApi;
+﻿using DDD.Domain;
+using DDD.Domain.Common.SmartEnum.Json;
 using DDD.Exceptions;
+using DDD.OpenApi;
+using Microsoft.Extensions.Options;
 
 
 namespace DDD.Extensions;
@@ -13,16 +15,13 @@ public static partial class DependencyInjection
 
         services.AddExceptionHandler<GlobalExceptionHandler>();
 
-        // Один экземпляр Factory можно использовать в обоих JSON pipeline.
-        var smartEnumFactory = new SmartEnumJsonConverterFactory();
-
         // Minimal API / Http.Json
-        services.ConfigureHttpJsonOptions(options => options.SerializerOptions.Converters.Add(smartEnumFactory));
+        services.ConfigureHttpJsonOptions(options => options.SerializerOptions.AddDomainJsonConverters());
 
         // MVC / Controllers
         services
             .AddControllers(options => options.Filters.Add<FluentValidationFilter>())
-            .AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(smartEnumFactory));
+            .AddJsonOptions(options => options.JsonSerializerOptions.AddDomainJsonConverters());
 
         services.AddOpenApi(options => options.AddSchemaTransformer<SmartEnumSchemaTransformer>());
 

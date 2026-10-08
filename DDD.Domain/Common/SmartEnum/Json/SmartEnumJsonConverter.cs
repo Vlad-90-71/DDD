@@ -4,23 +4,17 @@ using System.Text.Json.Serialization;
 
 namespace DDD.Domain.Common.SmartEnum.Json;
 
-public sealed class SmartEnumJsonConverter<T> : JsonConverter<T>
-    where T : SmartEnum<T>, ISmartEnum<T>
+public sealed class SmartEnumJsonConverter<T> : JsonConverter<T> where T : SmartEnum<T>, ISmartEnum<T>
 {
-    public override T? Read(
-        ref Utf8JsonReader reader,
-        Type typeToConvert,
-        JsonSerializerOptions options)
+    public override T? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         switch (reader.TokenType)
         {
             case JsonTokenType.Number:
                 {
                     if (!reader.TryGetInt32(out var value))
-                    {
                         throw new JsonException(
                             $"Значение для {typeof(T).Name} должно быть целым числом.");
-                    }
 
                     return ParseValue(value);
                 }
@@ -29,8 +23,12 @@ public sealed class SmartEnumJsonConverter<T> : JsonConverter<T>
                 {
                     var rawValue = reader.GetString();
 
-                    if (string.IsNullOrWhiteSpace(rawValue))
+                    if (rawValue is null)
                         return null;
+
+                    if (string.IsNullOrWhiteSpace(rawValue))
+                        throw new JsonException(
+                            $"Пустое значение недопустимо для {typeof(T).Name}.");
 
                     // C# field name:
                     // "New", "Processing", "Shipped", "Canceled"
@@ -47,8 +45,7 @@ public sealed class SmartEnumJsonConverter<T> : JsonConverter<T>
                     if (int.TryParse(rawValue, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsedValue))
                         return ParseValue(parsedValue);
 
-                    throw new JsonException(
-                        SmartEnum<T>.GetInvalidValueMessage(rawValue));
+                    throw new JsonException(SmartEnum<T>.GetInvalidValueMessage(rawValue));
                 }
 
             case JsonTokenType.Null:
@@ -56,15 +53,11 @@ public sealed class SmartEnumJsonConverter<T> : JsonConverter<T>
 
             default:
                 throw new JsonException(
-                    $"Неподдерживаемый JSON-токен '{reader.TokenType}' " +
-                    $"для {typeof(T).Name}.");
+                    $"Неподдерживаемый JSON-токен '{reader.TokenType}' для {typeof(T).Name}.");
         }
     }
 
-    public override void Write(
-        Utf8JsonWriter writer,
-        T value,
-        JsonSerializerOptions options)
+    public override void Write(Utf8JsonWriter writer, T value, JsonSerializerOptions options)
     {
         writer.WriteNumberValue(value.Value);
     }
@@ -74,7 +67,6 @@ public sealed class SmartEnumJsonConverter<T> : JsonConverter<T>
         if (SmartEnum<T>.TryParse(value, out var result))
             return result;
 
-        throw new JsonException(
-            SmartEnum<T>.GetInvalidValueMessage(value));
+        throw new JsonException(SmartEnum<T>.GetInvalidValueMessage(value));
     }
 }

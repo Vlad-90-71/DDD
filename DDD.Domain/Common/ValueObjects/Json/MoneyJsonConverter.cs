@@ -2,8 +2,6 @@
 using System.Text.Json.Serialization;
 using DDD.Domain.Common.ValueObjects;
 
-namespace DDD.Infrastructure.Converters;
-
 public sealed class MoneyJsonConverter : JsonConverter<Money>
 {
     public override Money Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
@@ -47,8 +45,7 @@ public sealed class MoneyJsonConverter : JsonConverter<Money>
         }
         catch (ArgumentException ex)
         {
-            throw new JsonException(
-                $"Некорректное значение Money: {amount} {currency}.", ex);
+            throw new JsonException($"Некорректное значение Money: {amount} {currency}.", ex);
         }
     }
 

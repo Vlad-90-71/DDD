@@ -13,5 +13,4 @@ public interface IEventProcessingStore
     Task<EventProcessingClaimResult> TryClaimAsync(Guid eventId, CancellationToken cancellationToken);
     Task MarkAsProcessedAsync(Guid eventId, Guid claimToken, CancellationToken cancellationToken);
     Task<bool> ReleaseClaimAsync(Guid eventId, Guid claimToken, string error, CancellationToken cancellationToken);
-    void LogProcessed(IDomainEvent domainEvent);
 }

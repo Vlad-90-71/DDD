@@ -10,19 +10,7 @@ public sealed class InMemoryMessageBroker
         Channel.CreateUnbounded<BrokerDelivery>();
 
     private readonly ConcurrentDictionary<Guid, BrokerDelivery> _pending = [];
-    /*
-    public bool RequeueOnNack { get; set; } = true;
 
-    private readonly TaskCompletionSource<bool> _nacked =
-        new(TaskCreationOptions.RunContinuationsAsynchronously);
-
-    private int _ackCount;
-    private int _nackCount;
-
-    public int AckCount => Volatile.Read(ref _ackCount);
-
-    public int NackCount => Volatile.Read(ref _nackCount);
-    */
     public Task PublishAsync(BrokerMessage message, CancellationToken cancellationToken)
     {
         var delivery = new BrokerDelivery(Guid.NewGuid(), message);
@@ -41,8 +29,7 @@ public sealed class InMemoryMessageBroker
 
     public void Ack(Guid deliveryId)
     {
-        var result = _pending.TryRemove(deliveryId, out _);
-        //if (result) Interlocked.Increment(ref _ackCount);
+        _pending.TryRemove(deliveryId, out _);
     }
 
     public async Task NackAsync(Guid deliveryId, /*bool requeue,*/ CancellationToken cancellationToken)
@@ -50,16 +37,6 @@ public sealed class InMemoryMessageBroker
         if (!_pending.TryRemove(deliveryId, out var delivery))
             return;
 
-        /*Interlocked.Increment(ref _nackCount);
-
-        _nacked.TrySetResult(true);
-
-        if (!requeue || !RequeueOnNack)
-            return;
-        */
         await _channel.Writer.WriteAsync(delivery, cancellationToken);
     }
-    /*
-    public Task WaitUntilNackedAsync() =>
-        _nacked.Task.WaitAsync(TimeSpan.FromSeconds(5));*/
 }

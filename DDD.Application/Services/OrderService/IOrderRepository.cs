@@ -1,5 +1,4 @@
-﻿using DDD.Domain.Enums;
-using DDD.Domain.Common.ValueObjects;
+﻿using DDD.Domain.Common.ValueObjects;
 using DDD.Domain.Entities.Order;
 using DDD.Domain.Common;
 

@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
 using DDD.Domain.Common.SmartEnum.Json;
-using DDD.Domain.Enums;
+using DDD.Domain.Entities.Order;
 
 namespace DDD.Tests.Domain;
 

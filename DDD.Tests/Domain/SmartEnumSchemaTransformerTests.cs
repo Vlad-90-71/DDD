@@ -1,4 +1,4 @@
-﻿using DDD.Domain.Enums;
+﻿using DDD.Domain.Entities.Order;
 using DDD.OpenApi;
 using Microsoft.AspNetCore.OpenApi;
 using Microsoft.Extensions.DependencyInjection;

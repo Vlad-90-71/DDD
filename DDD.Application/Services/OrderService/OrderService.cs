@@ -1,7 +1,6 @@
 ﻿using DDD.Application.Common;
 using DDD.Domain.Common.ValueObjects;
 using DDD.Domain.Entities.Order;
-using DDD.Domain.Enums;
 using DDD.Eventing.Contracts;
 using System.Data;
 

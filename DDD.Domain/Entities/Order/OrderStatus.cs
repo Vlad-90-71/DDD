@@ -1,6 +1,6 @@
 ﻿using DDD.Domain.Common.SmartEnum;
 
-namespace DDD.Domain.Enums;
+namespace DDD.Domain.Entities.Order;
 
 public class OrderStatus : SmartEnum<OrderStatus>
 {

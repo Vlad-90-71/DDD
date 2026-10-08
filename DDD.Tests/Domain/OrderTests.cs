@@ -1,6 +1,5 @@
 ﻿using DDD.Domain.Common.ValueObjects;
 using DDD.Domain.Entities.Order;
-using DDD.Domain.Enums;
 
 namespace DDD.Tests.Domain;
 
