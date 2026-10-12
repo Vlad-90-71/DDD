@@ -11,7 +11,8 @@ public sealed class InMemoryMessageConsumer(
     InMemoryMessageBroker broker,
     IDomainEventSerializer serializer,
     IServiceScopeFactory scopeFactory,
-    ILogger<InMemoryMessageConsumer> logger)
+    ILogger<InMemoryMessageConsumer> logger,
+    IDomainEventMetrics metrics)
     : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -104,10 +105,12 @@ public sealed class InMemoryMessageConsumer(
             logger.LogDebug(
                 "Consumer transaction committed. DeliveryId={DeliveryId}, EventId={EventId}, Type={Type}",
                 delivery.DeliveryId,  result.EventId, domainEvent.GetType().Name);
-
+            
+            metrics.EventProcessed();
+            
             broker.Ack(delivery.DeliveryId);
 
-            logger.LogInformation(
+            logger.LogDebug(
                 "Broker delivery acknowledged after successful processing. DeliveryId={DeliveryId}, EventId={EventId}, Type={Type}",
                 delivery.DeliveryId, result.EventId, domainEvent.GetType().Name);
         }
@@ -116,6 +119,8 @@ public sealed class InMemoryMessageConsumer(
             logger.LogError(ex,
                 "Consumer transaction failed. DeliveryId={DeliveryId}, EventId={EventId}, Type={Type}",
                 delivery.DeliveryId, result.EventId, domainEvent.GetType().Name);
+
+            metrics.EventFailed();
 
             var failed = await ReleaseClaimAsync(result.EventId, result.ClaimToken!.Value, ex, cancellationToken);
 

@@ -12,8 +12,7 @@ public class OutboxBackgroundService(
     private static readonly TimeSpan PollingInterval =
         TimeSpan.FromSeconds(5);
 
-    protected override async Task ExecuteAsync(
-        CancellationToken stoppingToken)
+    protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
         {

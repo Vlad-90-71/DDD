@@ -79,6 +79,14 @@ public class GlobalExceptionHandler(
                 Type = "https://ietf.org"
             },
 
+            KeyNotFoundException ex => new ProblemDetails
+            {
+                Status = StatusCodes.Status404NotFound,
+                Title = "Ресурс не найден",
+                Detail = ex.Message,
+                Type = "https://ietf.org"
+            },
+
             InvalidCastException ex when ex.Message.Contains("невалидно для") =>
                 new ProblemDetails
                 {

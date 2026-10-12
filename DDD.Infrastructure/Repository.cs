@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using DDD.Domain.Common;
 
-namespace DDD.Infrastructure.Repositories;
+namespace DDD.Infrastructure;
 
 public class Repository<TEntity, TKey>(DbContext context) : IRepository<TEntity, TKey>
     where TEntity : class, IEntity<TKey>

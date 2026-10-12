@@ -1,10 +1,15 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using DDD.Eventing.Contracts;
 using DDD.MessageBroker.Contracts;
 
 namespace DDD.Infrastructure.Outbox;
 
-public class OutboxProcessor(AppDbContext context, IMessagePublisher publisher, ILogger<OutboxProcessor> logger)
+public class OutboxProcessor(
+    AppDbContext context, 
+    IMessagePublisher publisher, 
+    ILogger<OutboxProcessor> logger,
+    IDomainEventMetrics metrics)
 {
     private const int MaxRetryCount = 5;
     private const int MaxRetryDelaySeconds = 300;
@@ -33,6 +38,8 @@ public class OutboxProcessor(AppDbContext context, IMessagePublisher publisher, 
 
                 var brokerMessage = new BrokerMessage(message.EventId, message.Type,  message.Content);
                 await publisher.PublishAsync(brokerMessage, cancellationToken);
+
+                metrics.OutboxPublished();
 
                 message.MarkAsProcessed(DateTime.UtcNow);
 

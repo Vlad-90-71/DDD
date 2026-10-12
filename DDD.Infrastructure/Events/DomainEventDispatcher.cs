@@ -1,5 +1,6 @@
 ﻿using DDD.Domain.Common.Events;
 using DDD.Eventing.Contracts;
+using DDD.Infrastructure.Monitoring;
 using Microsoft.Extensions.Logging;
 
 namespace DDD.Infrastructure.Events;
@@ -7,7 +8,8 @@ namespace DDD.Infrastructure.Events;
 public sealed class DomainEventDispatcher(
     IEnumerable<IDomainEventHandler> handlers,
     IEventProcessingStore eventStore,
-    ILogger<DomainEventDispatcher> logger)
+    ILogger<DomainEventDispatcher> logger,
+    IDomainEventMetrics metrics)
     : IDomainEventDispatcher
 {
     public async Task<EventProcessingClaimResult> DispatchAsync(IDomainEvent domainEvent, CancellationToken cancellationToken)
@@ -77,6 +79,8 @@ public sealed class DomainEventDispatcher(
             logger.LogError(ex,
                 "Event processing failed. EventId={EventId}, Type={EventType}",
                 domainEvent.EventId,eventType);
+
+            metrics.EventFailed();
 
             var failed = await eventStore.ReleaseClaimAsync(
                 domainEvent.EventId,

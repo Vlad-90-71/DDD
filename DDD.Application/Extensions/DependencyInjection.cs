@@ -1,10 +1,8 @@
-﻿using DDD.Application.Common;
+﻿using Microsoft.Extensions.DependencyInjection;
+using FluentValidation;
+using DDD.Domain.Entities.Order;
 using DDD.Application.Common.Events;
 using DDD.Application.Services.OrderService;
-using DDD.Domain.Common;
-using DDD.Domain.Entities.Order;
-using FluentValidation;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace DDD.Application.Extensions;
 

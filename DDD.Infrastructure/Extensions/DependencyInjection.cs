@@ -1,12 +1,13 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
+﻿using DDD.Application.Services.OrderService;
 using DDD.Domain.Common;
 using DDD.Eventing.Contracts;
 using DDD.Infrastructure.Events;
+using DDD.Infrastructure.Monitoring;
 using DDD.Infrastructure.Outbox;
 using DDD.Infrastructure.Repositories;
-using DDD.Application.Services.OrderService;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace DDD.Infrastructure.Extensions;
 
