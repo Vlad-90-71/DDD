@@ -10,7 +10,7 @@ services:
       - prometheus-data:/prometheus
     extra_hosts:
       - "host.docker.internal:host-gateway"
-  
+
   grafana:
     image: grafana/grafana
     container_name: ddd-grafana
@@ -26,6 +26,25 @@ services:
     depends_on:
       - prometheus
 
+  rabbitmq:
+    image: rabbitmq:4-management
+    container_name: ddd-rabbitmq
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:5672:5672"
+      - "127.0.0.1:15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: ddd
+      RABBITMQ_DEFAULT_PASS: local-rabbitmq-change-me
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 volumes:
   prometheus-data:
   grafana-data:
+  rabbitmq-data:

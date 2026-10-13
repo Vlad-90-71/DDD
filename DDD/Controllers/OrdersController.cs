@@ -1,13 +1,17 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using DDD.Infrastructure.Outbox;
+﻿using DDD.Application;
 using DDD.Application.Services.OrderService;
-using DDD.Application;
+using DDD.Eventing.Contracts;
+using DDD.Infrastructure.Outbox;
+using Microsoft.AspNetCore.Mvc;
 
 namespace DDD.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class OrdersController(IOrderService orderService, IOutboxService outboxService) : ControllerBase
+public class OrdersController(
+    IOrderService orderService, 
+    IOutboxService outboxService,
+    IEventReplayService eventReplayService) : ControllerBase
 {
     [HttpGet("test")]
     public async Task<ActionResult<string>> Test(CancellationToken cancellationToken)
@@ -28,6 +32,28 @@ public class OrdersController(IOrderService orderService, IOutboxService outboxS
             failureSimulation = failureSimulator.Enabled
         });
     }
+
+    [HttpPost("debug/events/{eventId:guid}/replay")]
+    public async Task<IActionResult> ReplayEvent(Guid eventId, CancellationToken cancellationToken)
+    {
+        var replayed = await eventReplayService.ReplayAsync(eventId, cancellationToken);
+
+        if (!replayed)
+        {
+            return Conflict(new
+            {
+                EventId = eventId,
+                Message = "Event was not found in a failed state or has already been replayed."
+            });
+        }
+
+        return Accepted(new
+        {
+            EventId = eventId,
+            Message = "Event replay has been scheduled through the Outbox."
+        });
+    }
+
 
     [HttpPost("debug/outbox/{id:long}/redeliver")]
     public async Task<IActionResult> Redeliver(long id, CancellationToken cancellationToken)

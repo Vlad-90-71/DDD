@@ -5,6 +5,7 @@ using DDD.Infrastructure;
 using DDD.Infrastructure.Extensions;
 using DDD.Infrastructure.Monitoring;
 using DDD.MessageBroker.InMemory;
+using DDD.MessageBroker.RabbitMQ.Extensions;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using OpenTelemetry.Metrics;
@@ -21,7 +22,8 @@ builder.Services.AddPresentationControllers();
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
-builder.Services.AddInMemoryMessageBroker();
+//builder.Services.AddInMemoryMessageBroker();
+builder.Services.AddRabbitMqMessageBroker(builder.Configuration);
 
 builder.Services.AddSingleton<IDomainEventMetrics, DddMetrics>();
 

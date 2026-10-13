@@ -48,4 +48,15 @@ public sealed class EventProcessingState
         LastError = null;
         UpdatedOnUtc = processedOnUtc;
     }
+    public void MarkAsFailed(string error, DateTime failedOnUtc)
+    {
+        if (ProcessedOnUtc is not null || FailedOnUtc is not null)
+            return;
+
+        FailedOnUtc = failedOnUtc;
+        ClaimToken = null;
+        ClaimedUntilUtc = null;
+        LastError = error;
+        UpdatedOnUtc = failedOnUtc;
+    }
 }

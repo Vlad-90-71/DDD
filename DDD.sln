@@ -19,6 +19,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DDD.Infrastructure", "DDD.I
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DDD.Tests", "DDD.Tests\DDD.Tests.csproj", "{27CC4923-4DB2-4236-87D9-2E8CCD716A00}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DDD.MessageBroker.RabbitMQ", "DDD.MessageBroker.RabbitMQ\DDD.MessageBroker.RabbitMQ.csproj", "{1A6FE707-F5AC-4DA3-83AF-5CE956C90116}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -57,6 +59,10 @@ Global
 		{27CC4923-4DB2-4236-87D9-2E8CCD716A00}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{27CC4923-4DB2-4236-87D9-2E8CCD716A00}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{27CC4923-4DB2-4236-87D9-2E8CCD716A00}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1A6FE707-F5AC-4DA3-83AF-5CE956C90116}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1A6FE707-F5AC-4DA3-83AF-5CE956C90116}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1A6FE707-F5AC-4DA3-83AF-5CE956C90116}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1A6FE707-F5AC-4DA3-83AF-5CE956C90116}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

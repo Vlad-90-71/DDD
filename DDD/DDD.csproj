@@ -30,6 +30,7 @@
     <ProjectReference Include="..\DDD.Application\DDD.Application.csproj" />
     <ProjectReference Include="..\DDD.Infrastructure\DDD.Infrastructure.csproj" />
     <ProjectReference Include="..\DDD.MessageBroker.InMemory\DDD.MessageBroker.InMemory.csproj" />
+    <ProjectReference Include="..\DDD.MessageBroker.RabbitMQ\DDD.MessageBroker.RabbitMQ.csproj" />
   </ItemGroup>
 
 </Project>

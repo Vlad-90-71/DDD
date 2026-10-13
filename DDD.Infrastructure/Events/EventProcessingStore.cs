@@ -19,7 +19,8 @@ public sealed class EventProcessingStore(AppDbContext context, ILogger<EventProc
         var updated = await context.EventProcessingStates
             .Where(x =>
                 x.EventId == eventId &&
-                x.ProcessedOnUtc == null && x.FailedOnUtc == null &&
+                x.ProcessedOnUtc == null &&
+                x.FailedOnUtc == null &&
                 (x.ClaimToken == null || x.ClaimedUntilUtc <= now))
             .ExecuteUpdateAsync(
                 setters => setters
@@ -35,7 +36,7 @@ public sealed class EventProcessingStore(AppDbContext context, ILogger<EventProc
                 "Event claim acquired. EventId={EventId}, ClaimToken={ClaimToken}, ClaimedUntil={ClaimedUntil}",
                 eventId, claimToken, claimedUntil);
 
-            return new EventProcessingClaimResult(EventProcessingClaimStatus.Claimed, eventId, claimToken);
+            return new EventProcessingClaimResult(EventProcessingClaimStatus.Claimed, eventId, claimToken, claimedUntil);
         }
 
         var existing = await context.EventProcessingStates
@@ -44,16 +45,19 @@ public sealed class EventProcessingStore(AppDbContext context, ILogger<EventProc
 
         var status = existing switch
         {
-            { ProcessedOnUtc: not null } => EventProcessingClaimStatus.AlreadyProcessed,
-            { FailedOnUtc: not null } => EventProcessingClaimStatus.Failed,
-            _ => EventProcessingClaimStatus.InProgress
+            { ProcessedOnUtc: not null } =>
+                EventProcessingClaimStatus.AlreadyProcessed,
+
+            { FailedOnUtc: not null } =>
+                EventProcessingClaimStatus.Failed, _ => EventProcessingClaimStatus.InProgress
         };
 
         logger.LogDebug(
-            "Event claim not acquired. EventId={EventId}, Status={Status}, AttemptCount={AttemptCount}",
-            eventId, status, existing.AttemptCount);
+            "Event claim not acquired. EventId={EventId}, Status={Status}, " +
+            "AttemptCount={AttemptCount}, ClaimedUntil={ClaimedUntil}",
+            eventId, status, existing.AttemptCount, existing.ClaimedUntilUtc);
 
-        return new EventProcessingClaimResult(status, eventId, null);
+        return new EventProcessingClaimResult(status, eventId, null, existing.ClaimedUntilUtc);
     }
 
     public async Task MarkAsProcessedAsync(Guid eventId, Guid claimToken, CancellationToken cancellationToken)
@@ -124,5 +128,40 @@ public sealed class EventProcessingStore(AppDbContext context, ILogger<EventProc
             eventId, eventEntry.AttemptCount);
 
         return false;
+    }
+
+    public async Task MarkAsFailedAsync(Guid eventId, string error, CancellationToken cancellationToken)
+    {
+        var state = await context.EventProcessingStates
+            .SingleOrDefaultAsync(x => x.EventId == eventId, cancellationToken);
+
+        if (state is null)
+        {
+            logger.LogWarning(
+                "Cannot mark event as failed because EventProcessingState was not found. EventId={EventId}",
+                eventId);
+
+            return;
+        }
+
+        if (state.IsProcessed || state.FailedOnUtc is not null)
+        {
+            logger.LogDebug(
+                "Event is already in a terminal state. EventId={EventId}, " +
+                "ProcessedOnUtc={ProcessedOnUtc}, FailedOnUtc={FailedOnUtc}",
+                eventId, state.ProcessedOnUtc, state.FailedOnUtc);
+
+            return;
+        }
+
+        var now = DateTime.UtcNow;
+
+        state.MarkAsFailed(error, now);
+
+        await context.SaveChangesAsync(cancellationToken);
+
+        logger.LogError(
+            "Event marked as permanently failed after transport delivery failure. EventId={EventId}",
+            eventId);
     }
 }

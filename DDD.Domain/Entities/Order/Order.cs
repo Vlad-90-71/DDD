@@ -73,9 +73,6 @@ public class Order : EntityEvent<int>
 
     public void Process()
     {
-        throw new InvalidOperationException(
-            "TEST: simulated domain event processing failure");
-
         EnsureStatus(OrderStatus.New);
 
         Status = OrderStatus.Processing;

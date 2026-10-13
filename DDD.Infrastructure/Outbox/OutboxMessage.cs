@@ -77,4 +77,14 @@ public class OutboxMessage : Entity<long>
         ClaimToken = null;
         ClaimedUntilUtc = null;
     }
+    public void ScheduleReplay()
+    {
+        ProcessedOnUtc = null;
+        FailedOnUtc = null;
+        RetryCount = 0;
+        Error = null;
+        NextAttemptOnUtc = null;
+        ClaimToken = null;
+        ClaimedUntilUtc = null;
+    }
 }

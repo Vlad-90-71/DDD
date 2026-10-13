@@ -11,7 +11,8 @@ public sealed class EmailAlreadyUsedException(Email email)
 public class OrderService(
     IOrderRepository orders,
     IUnitOfWork unitOfWork,
-    ILogger<OrderService> logger) : IOrderService
+    ILogger<OrderService> logger,
+    IFailureSimulator failureSimulator) : IOrderService
 {
     public async Task Test(CancellationToken cancellationToken)
     {
@@ -134,6 +135,14 @@ public class OrderService(
 
     public Task HandleOrderShippedAsync(OrderShippedEvent domainEvent, CancellationToken cancellationToken)
     {
+        if (failureSimulator.Enabled)
+        {
+            failureSimulator.Enabled = false;
+
+            throw new InvalidOperationException(
+                "Simulated handler failure.");
+        }
+
         logger.LogInformation("Handling order shipped event. OrderId={OrderId}", domainEvent.OrderId);
 
         return Task.CompletedTask;

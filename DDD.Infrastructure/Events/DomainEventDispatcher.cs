@@ -1,7 +1,6 @@
-﻿using DDD.Domain.Common.Events;
+﻿using Microsoft.Extensions.Logging;
+using DDD.Domain.Common.Events;
 using DDD.Eventing.Contracts;
-using DDD.Infrastructure.Monitoring;
-using Microsoft.Extensions.Logging;
 
 namespace DDD.Infrastructure.Events;
 
@@ -14,77 +13,83 @@ public sealed class DomainEventDispatcher(
 {
     public async Task<EventProcessingClaimResult> DispatchAsync(IDomainEvent domainEvent, CancellationToken cancellationToken)
     {
+        var eventId = domainEvent.EventId;
         var eventType = domainEvent.GetType().Name;
 
-        logger.LogDebug(
-            "Dispatching event. EventId={EventId}, Type={EventType}",
-            domainEvent.EventId, eventType);
-
-        var matchingHandlers = handlers
-            .Where(x => x.EventType == domainEvent.GetType())
-            .ToArray();
-
-        logger.LogDebug(
-            "Found {HandlerCount} handler(s). EventId={EventId}, Type={EventType}",
-            matchingHandlers.Length, domainEvent.EventId, eventType);
+        var matchingHandlers = handlers.Where(x => x.EventType == domainEvent.GetType()).ToArray();
 
         if (matchingHandlers.Length == 0)
         {
             logger.LogWarning(
                 "No handler found. EventId={EventId}, Type={EventType}",
-                domainEvent.EventId, eventType);
+                eventId, eventType);
 
-            return new EventProcessingClaimResult(
-                EventProcessingClaimStatus.NoHandler,
-                domainEvent.EventId,
-                null);
+            return new EventProcessingClaimResult(EventProcessingClaimStatus.NoHandler, eventId, null, null);
         }
 
-        var claim = await eventStore.TryClaimAsync(domainEvent.EventId, cancellationToken);
+        var claim = await eventStore.TryClaimAsync(eventId, cancellationToken);
 
         if (claim.Status != EventProcessingClaimStatus.Claimed)
         {
             logger.LogDebug(
-                "Event processing skipped. EventId={EventId}, Type={EventType}, Status={Status}",
-                domainEvent.EventId, eventType, claim.Status);
+                "Event processing skipped. EventId={EventId}, Type={EventType}, " +
+                "Status={Status}, ClaimedUntilUtc={ClaimedUntilUtc}",
+                eventId, eventType, claim.Status, claim.ClaimedUntilUtc);
 
             return claim;
         }
+
+        var claimToken = claim.ClaimToken
+            ?? throw new InvalidOperationException(
+                $"Claim token is missing for event {eventId}.");
+
+        logger.LogDebug(
+            "Dispatching event. EventId={EventId}, Type={EventType}, HandlerCount={HandlerCount}",
+            eventId, eventType, matchingHandlers.Length);
 
         try
         {
             foreach (var handler in matchingHandlers)
             {
+                cancellationToken.ThrowIfCancellationRequested();
+
                 logger.LogDebug(
                     "Executing handler {HandlerType}. EventId={EventId}, Type={EventType}",
-                    handler.GetType().Name, domainEvent.EventId, eventType);
+                    handler.GetType().Name, eventId, eventType);
 
                 await handler.HandleAsync(domainEvent, cancellationToken);
 
                 logger.LogDebug(
                     "Handler {HandlerType} completed. EventId={EventId}, Type={EventType}",
-                    handler.GetType().Name, domainEvent.EventId, eventType);
+                    handler.GetType().Name, eventId, eventType);
             }
 
-            await eventStore.MarkAsProcessedAsync(domainEvent.EventId, claim.ClaimToken!.Value, cancellationToken);
+            await eventStore.MarkAsProcessedAsync(eventId, claimToken, cancellationToken);
 
             logger.LogInformation(
                 "Event processed successfully. EventId={EventId}, Type={EventType}",
-                domainEvent.EventId, eventType);
+                eventId, eventType);
 
             return claim;
+        }
+        catch (OperationCanceledException)
+            when (cancellationToken.IsCancellationRequested)
+        {
+            // Не пытаемся освобождать claim отменённым токеном.
+            // Если claim останется активным, он истечёт по ClaimedUntilUtc.
+            throw;
         }
         catch (Exception ex)
         {
             logger.LogError(ex,
                 "Event processing failed. EventId={EventId}, Type={EventType}",
-                domainEvent.EventId,eventType);
+                eventId, eventType);
 
             metrics.EventFailed();
 
             var failed = await eventStore.ReleaseClaimAsync(
-                domainEvent.EventId,
-                claim.ClaimToken!.Value,
+                eventId,
+                claimToken,
                 ex.ToString(),
                 cancellationToken);
 
@@ -92,7 +97,8 @@ public sealed class DomainEventDispatcher(
                 failed
                     ? EventProcessingClaimStatus.Failed
                     : EventProcessingClaimStatus.Retry,
-                domainEvent.EventId,
+                eventId,
+                null,
                 null);
         }
     }

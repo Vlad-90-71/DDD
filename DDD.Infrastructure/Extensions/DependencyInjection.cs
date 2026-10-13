@@ -30,6 +30,7 @@ public static partial class DependencyInjection
         services.AddSingleton<IDomainEventSerializer, DomainEventSerializer>();
         services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
         services.AddScoped<IEventProcessingStore, EventProcessingStore>();
+        services.AddScoped<IEventReplayService, EventReplayService>();
 
         // Outbox
         services.AddScoped<IOutboxMessageSerializer, OutboxMessageSerializer>();
