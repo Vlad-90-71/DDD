@@ -5,7 +5,6 @@ public abstract class EntityEventHandler<TEntity, TKey, TEvent>(
     Func<TEvent, (TKey Id, Action<TEntity> Action)> mapper)
     : DomainEventHandler<TEvent>(async (domainEvent, cancellationToken) =>
     {
-        // Переносим логику обработки прямо в лямбду для базового класса
         var (id, action) = mapper(domainEvent);
 
         var entity = await repo.GetByIdAsync(id, cancellationToken)
