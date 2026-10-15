@@ -1,10 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
+﻿using DDD.Domain.Common;
 using DDD.Domain.Common.Events;
 using DDD.Domain.Entities.Order;
+using DDD.Infrastructure.Configurations;
 using DDD.Infrastructure.Events;
 using DDD.Infrastructure.Outbox;
-using DDD.Infrastructure.Configurations;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace DDD.Infrastructure;
 
@@ -22,6 +23,8 @@ public class AppDbContext(
     {
         base.OnModelCreating(modelBuilder);
 
+        modelBuilder.Ignore<DomainEvent>();
+
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
 
         modelBuilder.SmartEnumConfiguration();
@@ -29,6 +32,18 @@ public class AppDbContext(
 
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
+        var auditEntries = ChangeTracker.Entries<IAuditable>()
+            .Where(x => x.State is EntityState.Added or EntityState.Modified);
+
+        foreach (var entry in auditEntries)
+        {
+            if (entry.State == EntityState.Added && entry.Entity.CreatedOnUtc == default)
+                    entry.Property(x => x.CreatedOnUtc).CurrentValue = DateTime.UtcNow;
+
+            if (entry.State == EntityState.Modified)
+                entry.Property(x => x.UpdatedOnUtc).CurrentValue = DateTime.UtcNow;
+        }
+
         var entries = ChangeTracker.Entries<IEntityEvent>().ToArray();
 
         if (entries.Length > 0)

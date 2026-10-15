@@ -4,8 +4,7 @@ using DDD.Domain.Common;
 namespace DDD.Infrastructure;
 
 public class Repository<TEntity, TKey>(DbContext context) : IRepository<TEntity, TKey>
-    where TEntity : class, IEntity<TKey>
-    where TKey : struct
+    where TEntity : Entity<TKey> where TKey : struct
 {
     private readonly DbSet<TEntity> _dbSet = context.Set<TEntity>();
 

@@ -1,9 +1,9 @@
-﻿using DDD.Domain.Common.Events;
+﻿using DDD.Domain.Common;
 using DDD.Domain.Common.ValueObjects;
 
 namespace DDD.Domain.Entities.Order;
 
-public class Order : EntityEvent<int>
+public class Order : AuditEntityEvent<int>
 {
     public string ProductName { get; private set; } = null!;
     public CustomerName CustomerName { get; private set; } = null!;
@@ -76,7 +76,7 @@ public class Order : EntityEvent<int>
         EnsureStatus(OrderStatus.New);
 
         Status = OrderStatus.Processing;
-
+        
         AddDomainEvent(new OrderProcessingStartedEvent(Id, ProductName));
     }
 

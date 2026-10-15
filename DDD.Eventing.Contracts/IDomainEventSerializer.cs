@@ -4,6 +4,6 @@ namespace DDD.Eventing.Contracts;
 
 public interface IDomainEventSerializer
 {
-    string Serialize(IDomainEvent domainEvent);
-    IDomainEvent Deserialize(Guid eventId, string typeName, string content);
+    string Serialize(DomainEvent domainEvent);
+    DomainEvent Deserialize(Guid eventId, string typeName, string content);
 }

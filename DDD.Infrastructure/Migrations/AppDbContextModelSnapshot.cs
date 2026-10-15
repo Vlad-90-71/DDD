@@ -24,6 +24,9 @@ namespace DDD.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
+                    b.Property<DateTime>("CreatedOnUtc")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(320)
@@ -36,6 +39,9 @@ namespace DDD.Infrastructure.Migrations
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
+
+                    b.Property<DateTime>("UpdatedOnUtc")
+                        .HasColumnType("TEXT");
 
                     b.ComplexProperty<Dictionary<string, object>>("CustomerName", "DDD.Domain.Entities.Order.Order.CustomerName#CustomerName", b1 =>
                         {

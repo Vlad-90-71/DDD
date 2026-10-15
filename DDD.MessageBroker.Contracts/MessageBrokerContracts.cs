@@ -7,3 +7,7 @@ public interface IMessagePublisher
 {
     Task PublishAsync(BrokerMessage message, CancellationToken cancellationToken);
 }
+public interface IMessageBrokerRecoveryNotifier
+{
+    event Action? ConnectionRecovered;
+}

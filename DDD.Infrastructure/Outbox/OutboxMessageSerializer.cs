@@ -5,14 +5,14 @@ namespace DDD.Infrastructure.Outbox;
 
 public interface IOutboxMessageSerializer
 {
-    OutboxMessage Serialize(IDomainEvent domainEvent);
-    IDomainEvent Deserialize(OutboxMessage message);
+    OutboxMessage Serialize(DomainEvent domainEvent);
+    DomainEvent Deserialize(OutboxMessage message);
 }
 public class OutboxMessageSerializer : IOutboxMessageSerializer
 {
     private static readonly JsonSerializerOptions JsonOptions = JsonSerializerOptions.Web;
 
-    public OutboxMessage Serialize(IDomainEvent domainEvent)
+    public OutboxMessage Serialize(DomainEvent domainEvent)
     {
         ArgumentNullException.ThrowIfNull(domainEvent);
 
@@ -30,7 +30,7 @@ public class OutboxMessageSerializer : IOutboxMessageSerializer
             domainEvent.OccurredOnUtc);
     }
 
-    public IDomainEvent Deserialize(OutboxMessage message)
+    public DomainEvent Deserialize(OutboxMessage message)
     {
         ArgumentNullException.ThrowIfNull(message);
 
@@ -40,7 +40,7 @@ public class OutboxMessageSerializer : IOutboxMessageSerializer
 
         var deserialized = JsonSerializer.Deserialize(message.Content, type, JsonOptions);
 
-        if (deserialized is not IDomainEvent domainEvent)
+        if (deserialized is not DomainEvent domainEvent)
             throw new InvalidOperationException(
                 $"Десериализованный объект не реализует интерфейс IDomainEvent. Тип: {message.Type}");
 

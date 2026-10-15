@@ -1,4 +1,5 @@
-﻿using DDD.Domain.Entities.Order;
+﻿using DDD.Domain.Common.Events;
+using DDD.Domain.Entities.Order;
 
 namespace DDD.Tests.Domain;
 
@@ -232,7 +233,7 @@ public sealed class OrderDomainEventTests
         Assert.Equal(2, order.DomainEvents.Count);
 
         // Act
-        order.ClearDomainEvents();
+        ((IEntityEvent)order).ClearDomainEvents();
 
         // Assert
         Assert.Empty(order.DomainEvents);

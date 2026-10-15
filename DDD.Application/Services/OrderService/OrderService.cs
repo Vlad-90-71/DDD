@@ -160,7 +160,7 @@ public class OrderService(
     private async Task<bool> ExecuteOrderActionAsync(int id, Action<Order> action, string operation, CancellationToken cancellationToken)
     {
         var order = await orders.GetByIdAsync(id, cancellationToken);
-
+        
         if (order is null)
         {
             logger.LogDebug("Order not found. Operation={Operation}, OrderId={OrderId}", operation, id);

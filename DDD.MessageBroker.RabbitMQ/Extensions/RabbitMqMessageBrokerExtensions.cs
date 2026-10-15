@@ -25,6 +25,10 @@ public static class RabbitMqMessageBrokerExtensions
             .ValidateOnStart();
 
         services.AddSingleton<RabbitMqConnectionManager>();
+        
+        services.AddSingleton<IMessageBrokerRecoveryNotifier>(
+            sp => sp.GetRequiredService<RabbitMqConnectionManager>());
+
         services.AddSingleton<RabbitMqTopology>();
 
         services.AddSingleton<IMessagePublisher, RabbitMqMessagePublisher>();

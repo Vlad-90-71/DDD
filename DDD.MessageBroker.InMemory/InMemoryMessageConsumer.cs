@@ -89,7 +89,7 @@ public sealed class InMemoryMessageConsumer(
     private async Task ProcessClaimedAsync(
         BrokerDelivery delivery,
         EventProcessingClaimResult result,
-        IDomainEvent domainEvent,
+        DomainEvent domainEvent,
         IServiceScope scope,
         CancellationToken cancellationToken)
     {

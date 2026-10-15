@@ -9,14 +9,14 @@ public sealed class DomainEventSerializer : IDomainEventSerializer
 {
     private static readonly JsonSerializerOptions JsonOptions =
         new JsonSerializerOptions(JsonSerializerDefaults.Web).AddDomainJsonConverters();
-    public string Serialize(IDomainEvent domainEvent)
+    public string Serialize(DomainEvent domainEvent)
     {
         ArgumentNullException.ThrowIfNull(domainEvent);
 
         return JsonSerializer.Serialize(domainEvent, domainEvent.GetType(), JsonOptions);
     }
 
-    public IDomainEvent Deserialize(Guid eventId, string typeName, string content)
+    public DomainEvent Deserialize(Guid eventId, string typeName, string content)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(typeName);
         ArgumentException.ThrowIfNullOrWhiteSpace(content);
@@ -27,7 +27,7 @@ public sealed class DomainEventSerializer : IDomainEventSerializer
 
         var deserialized = JsonSerializer.Deserialize(content, type, JsonOptions);
 
-        if (deserialized is not IDomainEvent domainEvent)
+        if (deserialized is not DomainEvent domainEvent)
             throw new InvalidOperationException(
                 $"Десериализованный объект не реализует интерфейс IDomainEvent. Тип: {typeName}");
 

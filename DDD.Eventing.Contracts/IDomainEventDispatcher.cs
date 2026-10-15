@@ -4,5 +4,5 @@ namespace DDD.Eventing.Contracts;
 
 public interface IDomainEventDispatcher
 {
-    Task<EventProcessingClaimResult> DispatchAsync(IDomainEvent domainEvent, CancellationToken cancellationToken);
+    Task<EventProcessingClaimResult> DispatchAsync(DomainEvent domainEvent, CancellationToken cancellationToken);
 }

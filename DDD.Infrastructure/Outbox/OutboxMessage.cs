@@ -35,6 +35,7 @@ public class OutboxMessage : Entity<long>
     public void MarkAsProcessed(DateTime processedOnUtc)
     {
         ProcessedOnUtc = processedOnUtc;
+        FailedOnUtc = null;
 
         ClaimToken = null;
         ClaimedUntilUtc = null;

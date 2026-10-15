@@ -1,28 +1,28 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using DDD.Domain.Common.Events;
 
-namespace DDD.Application.Common.Events;
+namespace DDD.Application.Extensions;
 
 public static class DomainEventHandlerRegistrationExtensions
 {
-    public static IServiceCollection AddDomainEventHandler<TEvent>(
-        this IServiceCollection services) where TEvent : IDomainEvent
+    public static IServiceCollection AddDefaultDomainEventHandler<TEvent>(
+        this IServiceCollection services) where TEvent : DomainEvent
     {
-        services.AddScoped<DomainEventHandler<TEvent>>();
+        services.AddScoped<DefaultDomainEventHandler<TEvent>>();
 
         services.AddScoped<IDomainEventHandler<TEvent>>(
-            sp => sp.GetRequiredService<DomainEventHandler<TEvent>>());
+            sp => sp.GetRequiredService<DefaultDomainEventHandler<TEvent>>());
 
         services.AddScoped<IDomainEventHandler>(
-            sp => sp.GetRequiredService<DomainEventHandler<TEvent>>());
+            sp => sp.GetRequiredService<DefaultDomainEventHandler<TEvent>>());
 
         return services;
     }
 
     public static IServiceCollection AddDomainEventHandler<TEvent, THandler>(
         this IServiceCollection services)
-        where TEvent : IDomainEvent
-        where THandler : class, IDomainEventHandler<TEvent>
+        where TEvent : DomainEvent
+        where THandler : DomainEventHandler<TEvent>
     {
         services.AddScoped<THandler>();
 

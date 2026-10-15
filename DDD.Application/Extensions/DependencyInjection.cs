@@ -1,7 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using FluentValidation;
 using DDD.Domain.Entities.Order;
-using DDD.Application.Common.Events;
 using DDD.Application.Services.OrderService;
 
 namespace DDD.Application.Extensions;
@@ -16,9 +15,9 @@ public static class DependencyInjection
         services.AddScoped<IOrderService, OrderService>();
 
         // Events without business processing
-        services.AddDomainEventHandler<OrderCreatedEvent>();
-        services.AddDomainEventHandler<OrderProcessingStartedEvent>();
-        services.AddDomainEventHandler<OrderCanceledEvent>();
+        services.AddDefaultDomainEventHandler<OrderCreatedEvent>();
+        services.AddDefaultDomainEventHandler<OrderProcessingStartedEvent>();
+        services.AddDefaultDomainEventHandler<OrderCanceledEvent>();
 
         // Events with business processing
         services.AddDomainEventHandler<OrderProcessingRequestedEvent, OrderProcessingRequestedEventHandler>();

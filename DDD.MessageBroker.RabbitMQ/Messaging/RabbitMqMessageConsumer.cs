@@ -181,7 +181,7 @@ public sealed class RabbitMqMessageConsumer(
             using var scope = scopeFactory.CreateScope();
 
             // 2. Десериализуем доменное событие.
-            IDomainEvent domainEvent;
+            DomainEvent domainEvent;
 
             try
             {
@@ -286,7 +286,7 @@ public sealed class RabbitMqMessageConsumer(
     private async Task ProcessClaimedAsync(
         BasicDeliverEventArgs delivery,
         EventProcessingClaimResult result,
-        IDomainEvent domainEvent,
+        DomainEvent domainEvent,
         IServiceScope scope,
         CancellationToken cancellationToken)
     {

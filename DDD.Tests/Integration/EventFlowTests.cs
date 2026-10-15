@@ -1,5 +1,4 @@
-﻿using DDD.Application.Common.Events;
-using DDD.Domain.Common.ValueObjects;
+﻿using DDD.Domain.Common.ValueObjects;
 using DDD.Domain.Entities.Order;
 using DDD.Eventing.Contracts;
 using DDD.Infrastructure;

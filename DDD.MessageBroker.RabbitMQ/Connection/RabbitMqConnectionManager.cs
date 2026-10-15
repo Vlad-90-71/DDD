@@ -1,13 +1,19 @@
-﻿using Microsoft.Extensions.Options;
-using RabbitMQ.Client;
+﻿using DDD.MessageBroker.Contracts;
 using DDD.MessageBroker.RabbitMQ.Configuration;
+using Microsoft.Extensions.Options;
+using RabbitMQ.Client;
+using RabbitMQ.Client.Events;
 
 namespace DDD.MessageBroker.RabbitMQ.Connection;
 
-public sealed class RabbitMqConnectionManager(IOptions<RabbitMqOptions> options) : IAsyncDisposable
+public sealed class RabbitMqConnectionManager(
+    IOptions<RabbitMqOptions> options)
+    : IMessageBrokerRecoveryNotifier, IAsyncDisposable
 {
     private readonly SemaphoreSlim _lock = new(1, 1);
     private IConnection? _connection;
+
+    public event Action? ConnectionRecovered;
 
     public async Task<IConnection> GetConnectionAsync(CancellationToken cancellationToken = default)
     {
@@ -35,12 +41,21 @@ public sealed class RabbitMqConnectionManager(IOptions<RabbitMqOptions> options)
 
             _connection = await factory.CreateConnectionAsync(cancellationToken);
 
+            _connection.RecoverySucceededAsync += OnRecoverySucceededAsync;
+
             return _connection;
         }
         finally
         {
             _lock.Release();
         }
+    }
+
+    private Task OnRecoverySucceededAsync(object sender, AsyncEventArgs args)
+    {
+        ConnectionRecovered?.Invoke();
+
+        return Task.CompletedTask;
     }
 
     public async ValueTask DisposeAsync()

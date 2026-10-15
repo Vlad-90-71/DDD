@@ -11,7 +11,7 @@ public sealed class DomainEventDispatcher(
     IDomainEventMetrics metrics)
     : IDomainEventDispatcher
 {
-    public async Task<EventProcessingClaimResult> DispatchAsync(IDomainEvent domainEvent, CancellationToken cancellationToken)
+    public async Task<EventProcessingClaimResult> DispatchAsync(DomainEvent domainEvent, CancellationToken cancellationToken)
     {
         var eventId = domainEvent.EventId;
         var eventType = domainEvent.GetType().Name;
@@ -54,8 +54,11 @@ public sealed class DomainEventDispatcher(
                 cancellationToken.ThrowIfCancellationRequested();
 
                 logger.LogDebug(
-                    "Executing handler {HandlerType}. EventId={EventId}, Type={EventType}",
-                    handler.GetType().Name, eventId, eventType);
+                    "Executing handler {HandlerType}. EventId={EventId}, Type={EventType}, ClaimedUntilUtc={ClaimedUntilUtc}",
+                    handler.GetType().Name, eventId, eventType, handler.ClaimedUntilUtc);
+
+                Console.WriteLine($"Executing handler {handler.GetType().Name}. EventId={eventId}, Type={eventType}, ClaimedUntilUtc={handler.ClaimedUntilUtc}");
+
 
                 await handler.HandleAsync(domainEvent, cancellationToken);
 

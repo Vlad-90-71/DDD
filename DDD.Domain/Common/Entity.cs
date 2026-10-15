@@ -1,12 +1,14 @@
 ﻿namespace DDD.Domain.Common;
 
-public interface IEntity { }
+public interface IId { }
 
-public interface IEntity<out TKey> where TKey : struct
+public interface IId<out TKey> : IId where TKey : struct
 {
     TKey Id { get; }
 }
-public abstract class Entity<TKey> : IEntity<TKey> where TKey : struct
+public interface IEntity { }
+public abstract class Entity : Entity<int> { }
+public abstract class Entity<TKey> : IEntity, IId<TKey> where TKey : struct
 {
     public TKey Id { get; protected set; } // или init
 }

@@ -1,13 +1,5 @@
 ﻿using DDD.Domain.Common.Events;
-using DDD.Domain.Entities;
-using DDD.Domain.Entities.Order;
 using DDD.Eventing.Contracts;
-using DDD.Infrastructure.Events;
-using DDD.MessageBroker.Contracts;
-using DDD.MessageBroker.InMemory;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using System.Text.Json;
 
 namespace DDD.Tests.MessageBroker;
 
@@ -392,13 +384,9 @@ public sealed class InMemoryMessageConsumerTests
             $"Order {OrderId}";
     }
     */
-    private sealed record TestDomainEvent(Guid EventId, int OrderId) : IDomainEvent
+    private sealed record TestDomainEvent(int OrderId) : DomainEvent
     {
-        public DateTime OccurredOnUtc { get; } =
-            DateTime.UtcNow;
-
-        public string Message =>
-            $"Order {OrderId}";
+        public override string Message => $"Order {OrderId}";
     }
     // -------------------------------------------------------
     // Serializer
@@ -407,12 +395,12 @@ public sealed class InMemoryMessageConsumerTests
     private sealed class TestDomainEventSerializer
         : IDomainEventSerializer
     {
-        public IDomainEvent Deserialize(Guid eventId, string typeName, string content)
+        public DomainEvent Deserialize(Guid eventId, string typeName, string content)
         {
-            return new TestDomainEvent(eventId, 123);
+            return new TestDomainEvent(123);
         }
 
-        public string Serialize(IDomainEvent domainEvent)
+        public string Serialize(DomainEvent domainEvent)
         {
             throw new NotImplementedException();
         }
@@ -425,7 +413,7 @@ public sealed class InMemoryMessageConsumerTests
             _deserializeStarted =
                 new(TaskCreationOptions.RunContinuationsAsynchronously);
 
-        public IDomainEvent Deserialize(Guid eventId, string typeName, string content)
+        public DomainEvent Deserialize(Guid eventId, string typeName, string content)
         {
             _deserializeStarted.TrySetResult(true);
 
@@ -433,7 +421,7 @@ public sealed class InMemoryMessageConsumerTests
                 "Ошибка десериализации.");
         }
 
-        public string Serialize(IDomainEvent domainEvent)
+        public string Serialize(DomainEvent domainEvent)
         {
             throw new NotImplementedException();
         }
